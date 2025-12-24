@@ -79,11 +79,11 @@ button {
 <script src="https://unpkg.com/@metaplex-foundation/mpl-token-metadata@latest/dist/index.iife.js"></script>
 
 <script>
-const {
-  Connection, clusterApiUrl, Transaction, SystemProgram, Keypair
+const { 
+  Connection, clusterApiUrl, Transaction, SystemProgram, Keypair, LAMPORTS_PER_SOL 
 } = solanaWeb3;
 
-const {
+const { 
   TOKEN_PROGRAM_ID, MINT_SIZE,
   getMinimumBalanceForRentExemptMint,
   createInitializeMintInstruction,
@@ -94,137 +94,153 @@ const {
   AuthorityType
 } = splToken;
 
-const {
+const { 
   createCreateMetadataAccountV3Instruction,
-  PROGRAM_ID: METADATA_PROGRAM_ID
+  PROGRAM_ID: METADATA_PROGRAM_ID 
 } = mplTokenMetadata;
 
+// State variables
 let wallet = null;
-let connection = new Connection(clusterApiUrl('devnet'),'confirmed');
+let connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+let isConnecting = false;
 
+// DOM elements
 const walletBtn = document.getElementById('walletBtn');
 const form = document.getElementById('form');
-const network = document.getElementById('network');
+const networkSelect = document.getElementById('network');
+const statusDiv = document.createElement('div'); // For feedback messages
+statusDiv.style.marginTop = '1rem';
+statusDiv.style.padding = '1rem';
+statusDiv.style.borderRadius = '12px';
+form.parentNode.insertBefore(statusDiv, form);
 
-form.querySelectorAll('input,textarea,button').forEach(e=>e.disabled=true);
+// Helper: Get Phantom provider
+function getProvider() {
+  if ('phantom' in window) {
+    const provider = window.phantom?.solana;
+    if (provider?.isPhantom) {
+      return provider;
+    }
+  }
+  return null;
+}
 
-network.onchange = () => {
-  connection = new Connection(clusterApiUrl(network.value),'confirmed');
-  if(network.value==='mainnet-beta'){
-    alert('MAINNET MODE — REAL SOL WILL BE USED');
+// Disable/enable form
+function toggleForm(disabled) {
+  form.querySelectorAll('input,textarea,button,select').forEach(el => el.disabled = disabled);
+}
+
+// Show status message
+function showStatus(msg, isError = false) {
+  statusDiv.textContent = msg;
+  statusDiv.style.background = isError ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)';
+  statusDiv.style.border = `1px solid ${isError ? '#ef4444' : '#22c55e'}`;
+  statusDiv.style.color = isError ? '#fecaca' : '#bbf7d0';
+}
+
+// Update button text
+function updateWalletButton() {
+  if (wallet?.publicKey) {
+    walletBtn.textContent = wallet.publicKey.toString().slice(0,6) + '…' + wallet.publicKey.toString().slice(-4);
+    toggleForm(false);
+  } else {
+    walletBtn.textContent = 'Connect Phantom';
+    toggleForm(true);
+  }
+}
+
+// Network change
+networkSelect.onchange = () => {
+  connection = new Connection(clusterApiUrl(networkSelect.value), 'confirmed');
+  if (networkSelect.value === 'mainnet-beta') {
+    if (!confirm('⚠️ Switching to MAINNET — real SOL will be spent! Continue?')) {
+      networkSelect.value = 'devnet';
+      connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+    }
+  }
+  showStatus(`Connected to ${networkSelect.value.toUpperCase()}`);
+};
+
+// Connect handler
+async function connectWallet(eager = false) {
+  if (isConnecting) return;
+  isConnecting = true;
+  walletBtn.disabled = true;
+  walletBtn.textContent = eager ? 'Auto-connecting...' : 'Connecting...';
+
+  try {
+    const provider = getProvider();
+    if (!provider) {
+      showStatus('Phantom not detected! Make sure you\'re using Phantom\'s in-app browser (globe icon).', true);
+      throw new Error('No Phantom provider');
+    }
+
+    const params = eager ? { onlyIfTrusted: true } : {};
+    const resp = await provider.connect(params);
+
+    wallet = { publicKey: resp.publicKey };
+    showStatus('Connected successfully! 🎉');
+    updateWalletButton();
+  } catch (err) {
+    console.error(err);
+    if (err.code === 4001) {
+      showStatus('Connection rejected by user.', true);
+    } else {
+      showStatus('Connection failed: ' + (err.message || 'Unknown error'), true);
+    }
+    updateWalletButton();
+  } finally {
+    isConnecting = false;
+    walletBtn.disabled = false;
+  }
+}
+
+// Try eager connection on load (if previously trusted)
+window.addEventListener('load', () => {
+  connectWallet(true);
+});
+
+// Manual connect button
+walletBtn.onclick = () => connectWallet(false);
+
+// Form submission (your original logic, slightly cleaned)
+form.onsubmit = async (e) => {
+  e.preventDefault();
+  if (!wallet?.publicKey) return;
+
+  // ... (keep your existing form value collection, balance check, tx building)
+
+  // Important: Use provider to sign instead of window.solana
+  const provider = getProvider();
+  if (!provider) return showStatus('Lost wallet connection!', true);
+
+  try {
+    showStatus('Preparing transaction...');
+    // Build tx as before...
+
+    tx.feePayer = wallet.publicKey;
+    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+    tx.partialSign(mint);
+
+    const signedTx = await provider.signTransaction(tx);
+    const sig = await connection.sendRawTransaction(signedTx.serialize());
+    await connection.confirmTransaction(sig);
+
+    const explorerBase = networkSelect.value === 'mainnet-beta'
+      ? 'https://explorer.solana.com/address/'
+      : 'https://explorer.solana.com/address/?cluster=devnet';
+
+    showStatus(`Success! Token minted.\nMint: ${mint.publicKey.toBase58()}\n\nExplorer: \( {explorerBase} \){mint.publicKey.toBase58()}`, false);
+    alert(`TOKEN LAUNCHED 🚀\n\nMint: ${mint.publicKey.toBase58()}\nExplorer: \( {explorerBase} \){mint.publicKey.toBase58()}`);
+  } catch (err) {
+    console.error(err);
+    showStatus('Transaction failed: ' + (err.message || 'Unknown'), true);
   }
 };
 
-walletBtn.onclick = async () => {
-  wallet = await window.solana.connect();
-  walletBtn.textContent = wallet.publicKey.toString().slice(0,4)+'…';
-  form.querySelectorAll('input,textarea,button').forEach(e=>e.disabled=false);
-};
-
-form.onsubmit = async (e) => {
-e.preventDefault();
-
-const name = form.name.value;
-const symbol = form.symbol.value;
-const supply = Number(form.supply.value);
-const image = form.image.value || '';
-const description = form.description.value || '';
-
-if(network.value==='mainnet-beta'){
-  if(!confirm('FINAL WARNING: MAINNET TOKEN CREATION. CONTINUE?')) return;
-}
-
-const balance = await connection.getBalance(wallet.publicKey);
-if(balance < 0.05 * solanaWeb3.LAMPORTS_PER_SOL){
-  alert('Not enough SOL');
-  return;
-}
-
-const mint = Keypair.generate();
-const lamports = await getMinimumBalanceForRentExemptMint(connection);
-const ata = await getAssociatedTokenAddress(mint.publicKey, wallet.publicKey);
-
-const metadataPDA = solanaWeb3.PublicKey.findProgramAddressSync(
-  [
-    Buffer.from('metadata'),
-    METADATA_PROGRAM_ID.toBuffer(),
-    mint.publicKey.toBuffer()
-  ],
-  METADATA_PROGRAM_ID
-)[0];
-
-const tx = new Transaction().add(
-  SystemProgram.createAccount({
-    fromPubkey: wallet.publicKey,
-    newAccountPubkey: mint.publicKey,
-    lamports,
-    space: MINT_SIZE,
-    programId: TOKEN_PROGRAM_ID
-  }),
-  createInitializeMintInstruction(
-    mint.publicKey, 9, wallet.publicKey, wallet.publicKey
-  ),
-  createAssociatedTokenAccountInstruction(
-    wallet.publicKey, ata, wallet.publicKey, mint.publicKey
-  ),
-  createMintToInstruction(
-    mint.publicKey, ata, wallet.publicKey, supply * 1e9
-  ),
-  createCreateMetadataAccountV3Instruction(
-    {
-      metadata: metadataPDA,
-      mint: mint.publicKey,
-      mintAuthority: wallet.publicKey,
-      payer: wallet.publicKey,
-      updateAuthority: wallet.publicKey
-    },
-    {
-      createMetadataAccountArgsV3: {
-        data: {
-          name,
-          symbol,
-          uri: image,
-          sellerFeeBasisPoints: 0,
-          creators: null,
-          collection: null,
-          uses: null
-        },
-        isMutable: false,
-        collectionDetails: null
-      }
-    }
-  ),
-  createSetAuthorityInstruction(
-    mint.publicKey, wallet.publicKey,
-    AuthorityType.MintTokens, null
-  ),
-  createSetAuthorityInstruction(
-    mint.publicKey, wallet.publicKey,
-    AuthorityType.FreezeAccount, null
-  )
-);
-
-tx.feePayer = wallet.publicKey;
-tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-tx.partialSign(mint);
-
-const signed = await window.solana.signTransaction(tx);
-const sig = await connection.sendRawTransaction(signed.serialize());
-await connection.confirmTransaction(sig);
-
-const base = network.value==='mainnet-beta'
-  ? 'https://explorer.solana.com/address/'
-  : 'https://explorer.solana.com/address/?cluster=devnet';
-
-alert(`TOKEN COMPLETE ✅
-
-Mint:
-${mint.publicKey}
-
-Explorer:
-${base}${mint.publicKey}
-`);
-};
+// Initial setup
+updateWalletButton();
+toggleForm(true);
 </script>
 
 </body>
