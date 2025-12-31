@@ -23,7 +23,7 @@
     <h2>Token Launchpad</h2>
     
     <div class="info-box">
-      🛡️ <b>100% Safe Launch:</b> Mint & Freeze authorities will be permanently revoked upon creation. Your token will be fully decentralized.
+      🛡️ <b>Safety Enabled:</b> Mint & Freeze authorities will be revoked. Initial supply will be minted to your wallet, then the "keys" are destroyed.
     </div>
 
     <button id="connectBtn">1. Connect Phantom Wallet</button>
@@ -60,8 +60,10 @@
   <script src="https://unpkg.com/@metaplex-foundation/mpl-token-metadata@2.13.0/dist/index.iife.js"></script>
 
   <script>
+    // Initialize Buffer for the browser environment
     window.Buffer = window.buffer.Buffer;
     
+    // Pinata JWT (Pre-loaded)
     const PINATA_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiI3N2YxNDQxYi04N2U2LTQ1OTMtOGVmNi0wY2UzOTJlZWIwMmEiLCJlbWFpbCI6Impqbzk1ODU3NUBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicGluX3BvbGljeSI6eyJyZWdpb25zIjpbeyJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MSwiaWQiOiJGUkExIn0seyJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MSwiaWQiOiJOWUMxIn1dLCJ2ZXJzaW9uIjoxfSwibWZhX2VuYWJsZWQiOmZhbHNlLCJzdGF0dXMiOiJBQ1RJVkUifSwiYXV0aGVudGljYXRpb25UeXBlIjoic2NvcGVkS2V5Iiwic2NvcGVkS2V5S2V5IjoiYmNlZDI3MTQyMzdmOWFiYjUyMTYiLCJzY29wZWRLZXlTZWNyZXQiOiIwN2M2M2M4YTk4NzBiMmU2NzMzNjkzOGM3NWIyZDFhZjZhYTg0MzVjZGIwOWIyODQzYzI1NjAyNGQ5YmZiOGU5IiwiZXhwIjoxNzk4NzM4NjA0fQ.ateDL6iIohY2sqOygk6UBrUMgOpGdCJc2ij9eLq406w";
 
     const { Connection, clusterApiUrl, Transaction, SystemProgram, Keypair, PublicKey } = solanaWeb3;
@@ -76,15 +78,19 @@
     let wallet = null;
     let connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
 
+    // UI Elements
+    const connectBtn = document.getElementById('connectBtn');
+    const launchForm = document.getElementById('launchForm');
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+    const status = document.getElementById('status');
+
+    // Network switcher
     document.getElementById('network').onchange = (e) => {
       connection = new Connection(clusterApiUrl(e.target.value), 'confirmed');
     };
 
-    const imageInput = document.getElementById('imageInput');
-    const imagePreview = document.getElementById('imagePreview');
-    const launchForm = document.getElementById('launchForm');
-    const status = document.getElementById('status');
-
+    // Gallery Preview Logic
     imageInput.onchange = (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -97,15 +103,26 @@
       }
     };
 
-    document.getElementById('connectBtn').onclick = async () => {
+    // Wallet Connect Logic with Mobile Deep Linking
+    connectBtn.onclick = async () => {
       const provider = window.solana || window.phantom?.solana;
-      if (!provider) return alert("Open inside Phantom App Browser!");
+      
+      if (!provider) {
+        // Not in Phantom browser? Try to force open Phantom app
+        const currentUrl = window.location.href.replace(/^https?:\/\//, "");
+        window.location.href = `https://phantom.app/ul/browse/https://${currentUrl}`;
+        return;
+      }
+
       try {
         const resp = await provider.connect();
         wallet = provider;
-        document.getElementById('connectBtn').style.display = 'none';
+        connectBtn.style.display = 'none';
         launchForm.style.display = 'block';
-      } catch (err) { alert("Connect failed"); }
+        showStatus("Wallet Connected Successfully!");
+      } catch (err) {
+        alert("Connection refused by user.");
+      }
     };
 
     function showStatus(msg, err = false) {
@@ -118,15 +135,28 @@
     async function uploadToIPFS(file, name, symbol) {
       const formData = new FormData();
       formData.append('file', file);
+      
+      // Upload image to IPFS via Pinata
       const imgRes = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
         method: "POST", headers: { Authorization: `Bearer ${PINATA_JWT}` }, body: formData
       });
       const imgData = await imgRes.json();
       const imgUrl = `https://gateway.pinata.cloud/ipfs/${imgData.IpfsHash}`;
 
-      const meta = JSON.stringify({ name, symbol, image: imgUrl, properties: { files: [{ uri: imgUrl, type: "image/png" }] } });
+      // Create Metadata JSON (Standard Metaplex Format)
+      const meta = JSON.stringify({ 
+        name: name, 
+        symbol: symbol, 
+        description: "Launched via Mobile Launchpad",
+        image: imgUrl, 
+        attributes: [],
+        properties: { files: [{ uri: imgUrl, type: "image/png" }] } 
+      });
+
       const jsonRes = await fetch("https://api.pinata.cloud/pinning/pinJSONToIPFS", {
-        method: "POST", headers: { Authorization: `Bearer ${PINATA_JWT}`, "Content-Type": "application/json" }, body: meta
+        method: "POST", 
+        headers: { Authorization: `Bearer ${PINATA_JWT}`, "Content-Type": "application/json" }, 
+        body: meta
       });
       const jsonData = await jsonRes.json();
       return `https://gateway.pinata.cloud/ipfs/${jsonData.IpfsHash}`;
@@ -139,33 +169,53 @@
       
       try {
         const file = imageInput.files[0];
-        if(!file) throw new Error("Select an image first!");
+        if(!file) throw new Error("Please select a logo from your gallery!");
 
-        showStatus("1/3: Uploading to IPFS...");
+        showStatus("1/3: Uploading photo & metadata to IPFS...");
         const uri = await uploadToIPFS(file, document.getElementById('name').value, document.getElementById('symbol').value);
         
-        showStatus("2/3: Building Transaction...");
+        showStatus("2/3: Generating Mint & Revoking Authorities...");
         const mint = Keypair.generate();
         const payer = wallet.publicKey;
-        const [meta] = PublicKey.findProgramAddressSync([Buffer.from("metadata"), METADATA_PROGRAM_ID.toBuffer(), mint.publicKey.toBuffer()], METADATA_PROGRAM_ID);
+        
+        // Find the Metadata Account PDA
+        const [meta] = PublicKey.findProgramAddressSync(
+          [Buffer.from("metadata"), METADATA_PROGRAM_ID.toBuffer(), mint.publicKey.toBuffer()], 
+          METADATA_PROGRAM_ID
+        );
+
         const ata = await getAssociatedTokenAddress(mint.publicKey, payer);
         const rent = await getMinimumBalanceForRentExemptMint(connection);
 
         const tx = new Transaction().add(
+          // 1. Create the account for the Mint
           SystemProgram.createAccount({ fromPubkey: payer, newAccountPubkey: mint.publicKey, space: MINT_SIZE, lamports: rent, programId: TOKEN_PROGRAM_ID }),
+          // 2. Initialize the Mint (9 Decimals)
           createInitializeMintInstruction(mint.publicKey, 9, payer, payer),
+          // 3. Create the user's Token Account (ATA)
           createAssociatedTokenAccountInstruction(payer, ata, payer, mint.publicKey),
+          // 4. Mint the supply to the user's wallet
           createMintToInstruction(mint.publicKey, ata, payer, BigInt(document.getElementById('supply').value) * BigInt(10**9)),
+          // 5. Create Metadata Account (shows logo/name in wallet)
           createCreateMetadataAccountV3Instruction(
             { metadata: meta, mint: mint.publicKey, mintAuthority: payer, payer, updateAuthority: payer },
             { createMetadataAccountArgsV3: {
-                data: { name: document.getElementById('name').value, symbol: document.getElementById('symbol').value, uri, sellerFeeBasisPoints: 0, creators: null, collection: null, uses: null },
-                isMutable: true, collectionDetails: null
+                data: { 
+                    name: document.getElementById('name').value, 
+                    symbol: document.getElementById('symbol').value, 
+                    uri: uri, 
+                    sellerFeeBasisPoints: 0, 
+                    creators: null, 
+                    collection: null, 
+                    uses: null 
+                },
+                isMutable: true, 
+                collectionDetails: null
             }}
           ),
-          // Revoke Mint Authority
+          // 6. REVOKE MINT AUTHORITY (No more supply can be created)
           createSetAuthorityInstruction(mint.publicKey, payer, AuthorityType.MintTokens, null),
-          // Revoke Freeze Authority
+          // 7. REVOKE FREEZE AUTHORITY (Tokens cannot be frozen in wallets)
           createSetAuthorityInstruction(mint.publicKey, payer, AuthorityType.FreezeAccount, null)
         );
 
@@ -173,13 +223,14 @@
         tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
         tx.partialSign(mint);
 
-        showStatus("3/3: Waiting for Signature...");
+        showStatus("3/3: Waiting for Phantom Signature...");
         const signed = await wallet.signTransaction(tx);
         const sig = await connection.sendRawTransaction(signed.serialize());
         
-        showStatus(`🚀 SUCCESS!<br>Mint: ${mint.publicKey.toBase58()}<br><b>Authorities Revoked (100% Safe)</b><br><a href="https://solscan.io/tx/${sig}?cluster=${document.getElementById('network').value}" target="_blank" style="color:#fff;">View Transaction</a>`);
+        showStatus(`🚀 SUCCESS!<br>Mint: ${mint.publicKey.toBase58()}<br><b>Authorities Revoked</b><br><a href="https://solscan.io/tx/${sig}?cluster=${document.getElementById('network').value}" target="_blank" style="color:#fff;">View on Solscan</a>`);
       } catch (err) {
         showStatus("Error: " + err.message, true);
+        console.error(err);
       } finally {
         submitBtn.disabled = false;
       }
