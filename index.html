@@ -1,216 +1,218 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Solana Token Launchpad</title>
-<link rel="stylesheet" href="https://unpkg.com/@solana/wallet-adapter-react-ui/styles.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>SOLANA TOKEN LAUNCHPAD</title>
+
 <style>
-    body {
-        font-family: system-ui, -apple-system, sans-serif;
-        background: #7b0000; /* dark red */
-        color: #fff;
-        padding: 15px;
-        margin: 0;
-        text-transform: uppercase;
-    }
-    .card {
-        max-width: 500px;
-        margin: auto;
-        background:#161625;
-        padding:20px;
-        border-radius:24px;
-        border:1px solid #2d2d44;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
-    h2 { text-align:center; color:#fff; margin-bottom:15px; }
-    input, select, textarea, button {
-        width: 100%;
-        padding: 14px;
-        margin-bottom: 15px;
-        border-radius: 12px;
-        border: 1px solid #2d2d44;
-        background: #fff;
-        color: #1d4ed8; /* blue text */
-        font-size: 16px;
-        outline: none;
-        font-weight: bold;
-        text-transform: uppercase;
-    }
-    button { cursor: pointer; }
-    #walletStatus { 
-        text-align:center; 
-        margin-bottom:15px; 
-        font-weight:bold; 
-        color:#fff; 
-    }
-    #walletInfo { display:none; flex-direction: column; gap: 5px; margin-bottom: 15px; text-align:center; }
-    #walletAddr, #walletBal { font-family: monospace; }
-    #logoImg {
-        width: 120px;
-        height: 120px;
-        margin: 0 auto 15px auto;
-        display: block;
-        transition: all 0.3s ease;
-    }
-    #imagePreview { width:100px; height:100px; border-radius:12px; object-fit:cover; display:none; margin: 0 auto 15px auto; border: 2px solid #fff; }
-    #status { display:none; margin-top: 15px; padding: 12px; border-radius:12px; background:#2d2d44; word-break: break-word; font-size:14px; }
+body {
+  margin: 0;
+  padding: 15px;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #7b0000;
+  color: #fff;
+  text-transform: uppercase;
+}
+.card {
+  max-width: 500px;
+  margin: auto;
+  background: #161625;
+  padding: 20px;
+  border-radius: 24px;
+  border: 1px solid #2d2d44;
+}
+button, input {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  border: none;
+  background: #ffffff;
+  color: #1d4ed8;
+  font-weight: bold;
+  font-size: 16px;
+  touch-action: manipulation;
+}
+button { cursor: pointer; }
+#logo {
+  width: 120px;
+  height: 120px;
+  display: block;
+  margin: 0 auto 15px;
+  transition: all .3s ease;
+}
+#walletStatus {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+#walletInfo {
+  display: none;
+  text-align: center;
+}
+#launchpad {
+  display: none;
+}
+#walletModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.7);
+}
+.modalBox {
+  background: #161625;
+  border-radius: 20px;
+  padding: 20px;
+  max-width: 320px;
+  margin: 25% auto;
+}
+#status {
+  display:none;
+  background:#2d2d44;
+  padding:12px;
+  border-radius:12px;
+  font-size:14px;
+  word-break: break-word;
+}
 </style>
 </head>
+
 <body>
 <div class="card">
-    <img id="logoImg" src="https://i.ibb.co/x5dD8Vf/red-solana-coin.png" alt="Solana Coin">
-    <div id="walletStatus">NO WALLET DETECTED</div>
-    <div id="walletInfo">
-        <span id="walletAddr"></span>
-        <span id="walletBal"></span>
-        <button id="disconnectBtn">DISCONNECT</button>
-    </div>
 
-    <div id="launchpadUI" style="display:none;">
-        <h2>Token Launchpad</h2>
-        <form id="launchForm">
-            <label>Token Logo</label>
-            <img id="imagePreview">
-            <input type="file" id="imageInput" accept="image/*" required>
+<img id="logo" src="https://i.ibb.co/x5dD8Vf/red-solana-coin.png" />
 
-            <label>Token Name</label>
-            <input id="name" placeholder="e.g. Galactic Credits" required>
+<div id="walletStatus">NO WALLET DETECTED — TAP TO CONNECT</div>
 
-            <label>Symbol</label>
-            <input id="symbol" placeholder="e.g. GCR" maxlength="10" required>
+<div id="walletInfo">
+  <div id="walletAddr"></div>
+  <div id="walletBal"></div>
+  <button id="disconnect">DISCONNECT</button>
+</div>
 
-            <label>Total Supply</label>
-            <input id="supply" type="number" value="1000000" required>
+<div id="launchpad">
+  <input type="file" id="imageInput" accept="image/*" required />
+  <input id="name" placeholder="TOKEN NAME" required />
+  <input id="symbol" placeholder="SYMBOL" maxlength="10" required />
+  <input id="supply" type="number" value="1000000" required />
+  <button id="launch">LAUNCH TOKEN</button>
+</div>
 
-            <button type="submit" id="submitBtn">LAUNCH TOKEN & DESTROY KEYS</button>
-        </form>
-    </div>
-    <div id="status"></div>
+<div id="status"></div>
+
+</div>
+
+<div id="walletModal">
+  <div class="modalBox">
+    <button data-wallet="phantom">PHANTOM</button>
+    <button data-wallet="solflare">SOLFLARE</button>
+    <button data-wallet="okx">OKX</button>
+    <button data-wallet="slope">SLOPE</button>
+  </div>
 </div>
 
 <script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.min.js"></script>
-<script src="https://unpkg.com/@solana/wallet-adapter-base@0.9.22/lib/index.iife.min.js"></script>
 <script src="https://unpkg.com/@solana/wallet-adapter-wallets@0.9.22/lib/index.iife.min.js"></script>
 
 <script>
-(async () => {
-    const { Connection, clusterApiUrl, LAMPORTS_PER_SOL } = solanaWeb3;
-    const { WalletAdapterNetwork } = window['wallet-adapter-base'];
-    const { PhantomWalletAdapter, SolflareWalletAdapter, SlopeWalletAdapter, OKXWalletAdapter } = window['wallet-adapter-wallets'];
+const { Connection, clusterApiUrl, LAMPORTS_PER_SOL } = solanaWeb3;
+const { PhantomWalletAdapter, SolflareWalletAdapter, OKXWalletAdapter, SlopeWalletAdapter } = window['wallet-adapter-wallets'];
 
-    let wallet = null;
-    const connection = new Connection(clusterApiUrl("mainnet-beta"), "confirmed");
+const connection = new Connection(clusterApiUrl("mainnet-beta"), "confirmed");
+let wallet = null;
 
-    const walletStatus = document.getElementById("walletStatus");
-    const walletInfo = document.getElementById("walletInfo");
-    const walletAddr = document.getElementById("walletAddr");
-    const walletBal = document.getElementById("walletBal");
-    const disconnectBtn = document.getElementById("disconnectBtn");
-    const launchpadUI = document.getElementById("launchpadUI");
-    const logoImg = document.getElementById("logoImg");
+const modal = document.getElementById("walletModal");
+const statusText = document.getElementById("walletStatus");
+const walletInfo = document.getElementById("walletInfo");
+const launchpad = document.getElementById("launchpad");
+const logo = document.getElementById("logo");
+const walletAddrElem = document.getElementById("walletAddr");
+const walletBalElem = document.getElementById("walletBal");
+const statusBox = document.getElementById("status");
 
-    const wallets = [
-        new PhantomWalletAdapter(),
-        new SolflareWalletAdapter({ network: "mainnet-beta" }),
-        new SlopeWalletAdapter(),
-        new OKXWalletAdapter()
-    ];
+statusText.onclick = () => modal.style.display = "block";
 
-    async function updateWalletUI() {
-        if (!wallet || !wallet.publicKey) {
-            walletStatus.innerText = "NO WALLET DETECTED";
-            walletInfo.style.display = "none";
-            launchpadUI.style.display = "none";
-            logoImg.style.width = "120px"; 
-            logoImg.style.height = "120px";
-            return;
-        }
-        walletStatus.innerText = "CONNECTED";
-        walletInfo.style.display = "flex";
-        walletAddr.innerText = "ADDR: " + wallet.publicKey.toString().slice(0,4) + "..." + wallet.publicKey.toString().slice(-4);
-        const bal = await connection.getBalance(wallet.publicKey);
-        walletBal.innerText = "BAL: " + (bal / LAMPORTS_PER_SOL).toFixed(3) + " SOL";
-        launchpadUI.style.display = "block";
-        logoImg.style.width = "60px"; 
-        logoImg.style.height = "60px";
+async function updateWalletUI() {
+  if (!wallet || !wallet.publicKey) {
+    statusText.innerText = "NO WALLET DETECTED — TAP TO CONNECT";
+    walletInfo.style.display = "none";
+    launchpad.style.display = "none";
+    logo.style.width = "120px";
+    logo.style.height = "120px";
+    return;
+  }
+  statusText.innerText = "CONNECTED";
+  walletInfo.style.display = "block";
+  launchpad.style.display = "block";
+  logo.style.width = "60px";
+  logo.style.height = "60px";
+
+  walletAddrElem.innerText = "ADDR: " + wallet.publicKey.toString().slice(0,4) + "..." + wallet.publicKey.toString().slice(-4);
+
+  // async balance update
+  try {
+    const bal = await connection.getBalance(wallet.publicKey);
+    walletBalElem.innerText = "BAL: " + (bal/LAMPORTS_PER_SOL).toFixed(3) + " SOL";
+  } catch(e) {
+    walletBalElem.innerText = "BAL: ERROR";
+  }
+}
+
+document.querySelectorAll("[data-wallet]").forEach(btn => {
+  btn.onclick = async () => {
+    modal.style.display = "none";
+    const type = btn.dataset.wallet;
+    try {
+      if (type === "phantom") wallet = new PhantomWalletAdapter();
+      if (type === "solflare") wallet = new SolflareWalletAdapter({ network: "mainnet-beta" });
+      if (type === "okx") wallet = new OKXWalletAdapter();
+      if (type === "slope") wallet = new SlopeWalletAdapter();
+
+      await wallet.connect();
+      await updateWalletUI();
+    } catch (e) {
+      alert("WALLET NOT AVAILABLE IN THIS BROWSER");
+      wallet = null;
+      await updateWalletUI();
     }
+  };
+});
 
-    async function connectWallet() {
-        for (let w of wallets) {
-            if (w.ready) {
-                try {
-                    await w.connect();
-                    wallet = w;
-                    await updateWalletUI();
-                    return;
-                } catch(err) {
-                    console.error("Wallet connection failed:", err);
-                }
-            }
-        }
-        walletStatus.innerText = "NO WALLET DETECTED";
-        alert("No mobile wallet found. Install Phantom, Solflare, Slope, or OKX Wallet.");
-    }
+document.getElementById("disconnect").onclick = async () => {
+  if(wallet) await wallet.disconnect();
+  wallet = null;
+  await updateWalletUI();
+};
 
-    disconnectBtn.onclick = async () => {
-        if(wallet) await wallet.disconnect();
-        wallet = null;
-        await updateWalletUI();
-    };
+document.getElementById("launch").onclick = async () => {
+  if (!imageInput.files[0] || !name.value || !symbol.value || !supply.value) {
+    alert("PLEASE FILL ALL FIELDS");
+    return;
+  }
 
-    walletStatus.onclick = connectWallet;
+  statusBox.style.display = "block";
+  statusBox.innerText = "UPLOADING…";
 
-    // Auto balance refresh every 15 seconds
-    setInterval(async () => {
-        if(wallet && wallet.publicKey) {
-            const bal = await connection.getBalance(wallet.publicKey);
-            walletBal.innerText = "BAL: " + (bal / LAMPORTS_PER_SOL).toFixed(3) + " SOL";
-        }
-    }, 15000);
+  try {
+    const fd = new FormData();
+    fd.append("file", imageInput.files[0]);
+    fd.append("name", name.value);
+    fd.append("symbol", symbol.value);
+    fd.append("supply", supply.value);
 
-    // Image preview
-    const imageInput = document.getElementById("imageInput");
-    const imagePreview = document.getElementById("imagePreview");
-    imageInput.onchange = (e) => {
-        const reader = new FileReader();
-        reader.onload = (res) => {
-            imagePreview.src = res.target.result;
-            imagePreview.style.display = "block";
-        };
-        reader.readAsDataURL(e.target.files[0]);
-    };
+    const res = await fetch("/api/upload", { method: "POST", body: fd });
+    const data = await res.json();
 
-    // Launch form
-    const launchForm = document.getElementById("launchForm");
-    const statusBox = document.getElementById("status");
+    statusBox.innerHTML = "METADATA URI:<br>" + data.uri;
+  } catch(err) {
+    console.error(err);
+    statusBox.innerText = "Error: " + err.message;
+  }
+};
 
-    launchForm.onsubmit = async (e) => {
-        e.preventDefault();
-        const btn = document.getElementById("submitBtn");
-        btn.disabled = true;
-        statusBox.style.display = "block";
-        statusBox.innerText = "Uploading to server...";
-
-        try {
-            const file = imageInput.files[0];
-            const formData = new FormData();
-            formData.append("file", file);
-            formData.append("name", document.getElementById("name").value);
-            formData.append("symbol", document.getElementById("symbol").value);
-
-            const res = await fetch("/api/upload", { method: "POST", body: formData });
-            const data = await res.json();
-            statusBox.innerHTML = `✅ Upload successful!<br>Metadata URI:<br>${data.uri}`;
-        } catch(err) {
-            console.error(err);
-            statusBox.innerText = "Error: " + err.message;
-            btn.disabled = false;
-        }
-    };
-
-    await updateWalletUI(); // initial check
-})();
+// initial check
+updateWalletUI();
 </script>
 </body>
 </html>
