@@ -2,258 +2,257 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>SOLANA LAUNCHPAD</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MC TOKEN MINTER</title>
 
-  <script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.min.js"></script>
+  <!-- Modern wallet adapter stack -->
+  <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
+  <script src="https://unpkg.com/@solana/wallet-adapter-base@0.9.23/dist/umd/index.min.js"></script>
+  <script src="https://unpkg.com/@solana/wallet-adapter-react@0.15.35/dist/umd/index.min.js"></script>
+  <script src="https://unpkg.com/@solana/wallet-adapter-wallets@0.19.32/dist/umd/index.min.js"></script>
+  <script src="https://unpkg.com/@solana/wallet-adapter-react-ui@0.9.35/dist/umd/index.min.js"></script>
+  <link href="https://unpkg.com/@solana/wallet-adapter-react-ui@0.9.35/styles.css" rel="stylesheet" />
 
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-      text-transform: uppercase;
-    }
-
+    * { margin:0; padding:0; box-sizing:border-box; }
     body {
-      margin: 0;
-      padding: 0;
+      background: linear-gradient(135deg, #0a0015 0%, #1a0033 100%);
+      color: #e0d0ff;
+      font-family: system-ui, -apple-system, sans-serif;
       min-height: 100vh;
-      background: #7a0000; 
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      color: white;
     }
-
-    .card {
-      background: #8f0000;
-      padding: 30px;
-      border-radius: 16px;
+    .banner {
       width: 100%;
-      max-width: 400px;
+      background: rgba(100, 0, 255, 0.12);
+      padding: 50px 20px;
       text-align: center;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-      border: 1px solid rgba(255,255,255,0.1);
+      border-bottom: 1px solid rgba(140, 0, 255, 0.4);
+      position: relative;
     }
-
-    h1 {
-      margin: 0;
-      font-size: 24px;
-      letter-spacing: 2px;
-      font-weight: 900;
+    .banner h1 {
+      font-size: 3.8rem;
+      letter-spacing: 8px;
+      background: linear-gradient(90deg, #a78bfa, #c084fc, #a78bfa);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: pulse 5s infinite alternate;
     }
-
-    .subtitle {
-      font-size: 11px;
-      opacity: 0.8;
-      margin-bottom: 25px;
-      letter-spacing: 1.5px;
-      color: #00ffa3;
+    @keyframes pulse { 0% { opacity: 0.92; } 100% { opacity: 1; } }
+    .card {
+      background: rgba(20, 10, 40, 0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(140, 0, 255, 0.3);
+      border-radius: 20px;
+      padding: 40px 32px;
+      margin: 40px 20px;
+      width: 100%; max-width: 520px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
     }
-
-    button {
+    #status {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin: 24px 0 16px;
+      min-height: 1.8em;
+      letter-spacing: 1px;
+    }
+    #balance {
+      font-size: 2rem;
+      color: #a78bfa;
+      margin-bottom: 32px;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin: 32px 0;
+    }
+    .stat {
+      background: rgba(100, 0, 255, 0.15);
+      border: 1px solid rgba(140, 0, 255, 0.3);
+      border-radius: 12px;
+      padding: 16px 12px;
+      font-size: 0.95rem;
+    }
+    .stat strong {
+      display: block;
+      font-size: 1.4rem;
+      color: #c084fc;
+      margin-top: 6px;
+    }
+    .mint-btn {
       width: 100%;
-      padding: 16px;
-      margin-top: 12px;
-      border: none;
-      border-radius: 8px;
-      background: white;
-      color: #7a0000;
-      font-size: 14px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    button:hover {
-      background: #f0f0f0;
-      transform: translateY(-2px);
-    }
-
-    #presale-section {
-      display: none;
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid rgba(255,255,255,0.2);
-    }
-
-    #contribute-btn {
-      background: #00ffa3; 
-      color: #052e1f;
-    }
-
-    #disconnect {
-      display: none;
-      background: transparent;
-      color: white;
-      border: 1px solid rgba(255,255,255,0.3);
-      font-size: 10px;
-      margin-top: 25px;
-      padding: 8px;
-    }
-
-    #info {
-      margin: 20px 0;
-      font-size: 12px;
-      line-height: 1.6;
-      background: rgba(0,0,0,0.3);
-      padding: 15px;
-      border-radius: 8px;
-      text-align: left;
-      border-left: 3px solid #00ffa3;
-    }
-
-    .status-tag {
+      padding: 20px;
+      font-size: 1.5rem;
       font-weight: bold;
-      color: #00ffa3;
+      background: linear-gradient(90deg, #7c3aed, #a78bfa);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 32px;
+      transition: all 0.2s;
     }
-
-    .label {
-      opacity: 0.6;
-      font-size: 10px;
-      display: inline-block;
-      width: 65px;
+    .mint-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(124,58,237,0.5); }
+    .solana-bottom {
+      width: 100%;
+      height: 120px;
+      position: relative;
+      margin-top: auto;
+      margin-bottom: 40px;
+    }
+    .solana-bottom::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, #a78bfa 40%, #c084fc 60%, transparent);
+      height: 3px;
+      top: 50%;
+    }
+    .solana-spiral {
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 4rem;
+      color: #a78bfa;
+      opacity: 0.4;
+      letter-spacing: -8px;
     }
   </style>
 </head>
-
 <body>
+
+  <div class="banner">
+    <h1>MC TOKEN</h1>
+    <p style="margin-top:12px; font-size:1.2rem; opacity:0.85;">
+      Fair Launch • Mint Revoked • Community First
+    </p>
+  </div>
+
   <div class="card">
-    <h1>LAUNCHPAD</h1>
-    <div class="subtitle">PRESALE ROUND LIVE</div>
+    <div id="status">NOT CONNECTED</div>
 
-    <div id="info">STATUS: AWAITING CONNECTION</div>
+    <div id="balance">Balance: — SOL</div>
 
-    <button id="connect">CONNECT PHANTOM</button>
-
-    <div id="presale-section">
-      <button id="contribute-btn">CONTRIBUTE 0.1 SOL</button>
+    <!-- Wallet connect button will be injected here by adapter -->
+    <div style="margin: 32px 0; min-height: 56px;">
+      <div class="wallet-adapter-button-container"></div>
     </div>
 
-    <button id="disconnect">DISCONNECT WALLET</button>
+    <div class="stats-grid">
+      <div class="stat">
+        Market Cap
+        <strong id="mc">—</strong>
+      </div>
+      <div class="stat">
+        Liquidity
+        <strong id="liquidity">—</strong>
+      </div>
+      <div class="stat">
+        Holders
+        <strong id="holders">—</strong>
+      </div>
+    </div>
+
+    <button class="mint-btn" id="mintButton" disabled>
+      MINT MC TOKENS
+    </button>
+  </div>
+
+  <div class="solana-bottom">
+    <div class="solana-spiral">⟡⟡⟡</div>
   </div>
 
   <script>
-    const { Connection, clusterApiUrl, LAMPORTS_PER_SOL, PublicKey, Transaction, SystemProgram } = solanaWeb3;
+    // REPLACE THIS WITH YOUR ACTUAL TOKEN MINT ADDRESS
+    const TOKEN_ADDRESS = "YOUR_TOKEN_MINT_ADDRESS_HERE"; // ←←← PUT YOUR TOKEN CA HERE
 
-    // --- LAUNCHPAD CONFIG ---
-    const NETWORK = "mainnet-beta"; 
-    const DESTINATION_WALLET = "FMJaHXHkNoAcecf5JRHghubqVBFYHwxuZXwaxSrcVm56";
-    const AMOUNT = 0.1; 
-    
-    const connection = new Connection(clusterApiUrl(NETWORK), "confirmed");
-    const connectBtn = document.getElementById("connect");
-    const disconnectBtn = document.getElementById("disconnect");
-    const contributeBtn = document.getElementById("contribute-btn");
-    const presaleSection = document.getElementById("presale-section");
-    const info = document.getElementById("info");
+    const { Connection, clusterApiUrl, LAMPORTS_PER_SOL } = solanaWeb3;
+    const connection = new Connection(clusterApiUrl("mainnet-beta"), "confirmed");
 
-    let userPublicKey = null;
+    let publicKey = null;
 
-    async function updateUI(publicKey) {
-      userPublicKey = publicKey;
-      try {
-        const balance = await connection.getBalance(userPublicKey);
-        
-        info.innerHTML = `
-          <div><span class="label">STATUS:</span> <span class="status-tag">CONNECTED</span></div>
-          <div><span class="label">WALLET:</span> ${userPublicKey.toString().slice(0, 6)}...${userPublicKey.toString().slice(-6)}</div>
-          <div><span class="label">BALANCE:</span> ${(balance / LAMPORTS_PER_SOL).toFixed(4)} SOL</div>
-        `;
-
-        connectBtn.style.display = "none";
-        disconnectBtn.style.display = "block";
-        presaleSection.style.display = "block";
-      } catch (err) {
-        console.error("Balance Error:", err);
+    // Listen for wallet adapter events (this is how modern adapters work)
+    window.addEventListener("wallet-adapter-ready-state-change", (e) => {
+      if (e.detail?.publicKey) {
+        publicKey = new solanaWeb3.PublicKey(e.detail.publicKey);
+        updateUI();
+        startPolling();
+        document.getElementById("mintButton").disabled = false;
+      } else {
+        publicKey = null;
+        document.getElementById("status").textContent = "NOT CONNECTED";
+        document.getElementById("balance").textContent = "Balance: — SOL";
+        document.getElementById("mintButton").disabled = true;
+        resetStats();
       }
-    }
-
-    function resetUI() {
-      userPublicKey = null;
-      info.innerText = "STATUS: AWAITING CONNECTION";
-      connectBtn.style.display = "block";
-      disconnectBtn.style.display = "none";
-      presaleSection.style.display = "none";
-    }
-
-    // Connect
-    connectBtn.onclick = async () => {
-      if (!window.solana?.isPhantom) {
-        alert("Please install Phantom Wallet extension.");
-        return;
-      }
-      try {
-        const res = await window.solana.connect();
-        localStorage.setItem("launchpad_connected", "true");
-        await updateUI(res.publicKey);
-      } catch (err) {
-        console.log("Connect cancelled");
-      }
-    };
-
-    // Disconnect
-    disconnectBtn.onclick = async () => {
-      await window.solana.disconnect();
-      localStorage.removeItem("launchpad_connected");
-      resetUI();
-    };
-
-    // Contribution Transaction
-    contributeBtn.onclick = async () => {
-      if (!userPublicKey) return;
-
-      try {
-        info.innerHTML = `<span class="status-tag">CHECKING WALLET...</span>`;
-
-        const transaction = new Transaction().add(
-          SystemProgram.transfer({
-            fromPubkey: userPublicKey,
-            toPubkey: new PublicKey(DESTINATION_WALLET),
-            lamports: AMOUNT * LAMPORTS_PER_SOL, 
-          })
-        );
-
-        transaction.feePayer = userPublicKey;
-        const { blockhash } = await connection.getLatestBlockhash();
-        transaction.recentBlockhash = blockhash;
-
-        // Request Signature
-        const { signature } = await window.solana.signAndSendTransaction(transaction);
-        
-        info.innerHTML = `<span class="status-tag">PROCESSING TX...</span>`;
-        
-        // Wait for confirmation
-        const confirmation = await connection.confirmTransaction(signature, 'confirmed');
-        
-        info.innerHTML = `
-          <span class="status-tag">CONTRIBUTION RECEIVED!</span><br>
-          <small style="font-size:9px">SIG: ${signature.slice(0,20)}...</small>
-        `;
-        
-        // Refresh balance
-        setTimeout(() => updateUI(userPublicKey), 3000);
-
-      } catch (err) {
-        console.error(err);
-        info.innerHTML = `<span style="color: #ff9d9d;">TX FAILED OR DENIED</span>`;
-        setTimeout(() => updateUI(userPublicKey), 2500);
-      }
-    };
-
-    // Persistence logic
-    window.addEventListener("load", () => {
-      setTimeout(async () => {
-        if (localStorage.getItem("launchpad_connected") === "true" && window.solana?.isPhantom) {
-          try {
-            const res = await window.solana.connect({ onlyIfTrusted: true });
-            await updateUI(res.publicKey);
-          } catch (err) {
-            localStorage.removeItem("launchpad_connected");
-          }
-        }
-      }, 300);
     });
+
+    async function updateUI() {
+      if (!publicKey) return;
+      const addr = publicKey.toBase58();
+      const short = addr.slice(0,6) + "..." + addr.slice(-6);
+      document.getElementById("status").textContent = `CONNECTED TO ${short}`;
+      updateBalance();
+    }
+
+    async function updateBalance() {
+      if (!publicKey) return;
+      try {
+        const bal = await connection.getBalance(publicKey);
+        const sol = (bal / LAMPORTS_PER_SOL).toFixed(4);
+        document.getElementById("balance").textContent = `Balance: ${sol} SOL`;
+      } catch (e) {}
+    }
+
+    async function fetchDexScreenerData() {
+      if (!TOKEN_ADDRESS || TOKEN_ADDRESS === "YOUR_TOKEN_MINT_ADDRESS_HERE") return;
+
+      try {
+        const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${TOKEN_ADDRESS}`);
+        const data = await res.json();
+
+        if (data.pairs && data.pairs.length > 0) {
+          const bestPair = data.pairs[0]; // usually the one with most liquidity
+
+          document.getElementById("mc").textContent = 
+            bestPair.fdV ? "$" + bestPair.fdV.toLocaleString() : "—";
+
+          document.getElementById("liquidity").textContent = 
+            bestPair.liquidity?.usd ? "$" + bestPair.liquidity.usd.toLocaleString() : "—";
+
+          // Holders not directly in DexScreener → placeholder or use Birdeye/Hellomoon later
+          document.getElementById("holders").textContent = "—";
+        }
+      } catch (e) {
+        resetStats();
+      }
+    }
+
+    function resetStats() {
+      document.getElementById("mc").textContent = "—";
+      document.getElementById("liquidity").textContent = "—";
+      document.getElementById("holders").textContent = "—";
+    }
+
+    function startPolling() {
+      updateBalance();
+      fetchDexScreenerData();
+      setInterval(() => {
+        updateBalance();
+        fetchDexScreenerData();
+      }, 12000); // ~every 12 seconds
+    }
+
+    // Mint button placeholder - put your Metaplex mint logic here later
+    document.getElementById("mintButton").onclick = () => {
+      alert("Mint transaction would start here (Metaplex + revoke authority logic goes here)");
+    };
   </script>
 </body>
 </html>
