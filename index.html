@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>SOLANA CONNECT & SEND</title>
+  <title>SOLANA LAUNCHPAD</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.min.js"></script>
@@ -10,7 +10,7 @@
   <style>
     * {
       box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
       text-transform: uppercase;
     }
 
@@ -33,200 +33,226 @@
       max-width: 400px;
       text-align: center;
       box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.1);
     }
 
     h1 {
-      margin-top: 0;
-      margin-bottom: 20px;
-      font-size: 20px;
+      margin: 0;
+      font-size: 24px;
       letter-spacing: 2px;
+      font-weight: 900;
+    }
+
+    .subtitle {
+      font-size: 11px;
+      opacity: 0.8;
+      margin-bottom: 25px;
+      letter-spacing: 1.5px;
+      color: #00ffa3;
     }
 
     button {
       width: 100%;
-      padding: 14px;
+      padding: 16px;
       margin-top: 12px;
       border: none;
       border-radius: 8px;
       background: white;
       color: #7a0000;
-      font-size: 13px;
-      font-weight: bold;
+      font-size: 14px;
+      font-weight: 800;
       cursor: pointer;
-      transition: transform 0.1s, background 0.2s;
+      transition: all 0.2s ease;
     }
 
     button:hover {
       background: #f0f0f0;
+      transform: translateY(-2px);
     }
 
-    button:active {
-      transform: scale(0.98);
-    }
-
-    #send-section {
+    #presale-section {
       display: none;
       margin-top: 20px;
       padding-top: 20px;
       border-top: 1px solid rgba(255,255,255,0.2);
     }
 
-    #send-btn {
-      background: #00ffbd;
-      color: #000;
+    #contribute-btn {
+      background: #00ffa3; 
+      color: #052e1f;
     }
 
     #disconnect {
       display: none;
       background: transparent;
       color: white;
-      border: 1px solid white;
-      margin-top: 20px;
+      border: 1px solid rgba(255,255,255,0.3);
+      font-size: 10px;
+      margin-top: 25px;
+      padding: 8px;
     }
 
     #info {
       margin: 20px 0;
       font-size: 12px;
       line-height: 1.6;
-      word-break: break-all;
-      background: rgba(0,0,0,0.2);
-      padding: 10px;
+      background: rgba(0,0,0,0.3);
+      padding: 15px;
       border-radius: 8px;
+      text-align: left;
+      border-left: 3px solid #00ffa3;
     }
 
     .status-tag {
       font-weight: bold;
-      color: #00ffbd;
+      color: #00ffa3;
+    }
+
+    .label {
+      opacity: 0.6;
+      font-size: 10px;
+      display: inline-block;
+      width: 65px;
     }
   </style>
 </head>
 
 <body>
   <div class="card">
-    <h1>Solana Pay Portal</h1>
+    <h1>LAUNCHPAD</h1>
+    <div class="subtitle">PRESALE ROUND LIVE</div>
 
-    <div id="info">STATUS: NOT CONNECTED</div>
+    <div id="info">STATUS: AWAITING CONNECTION</div>
 
     <button id="connect">CONNECT PHANTOM</button>
 
-    <div id="send-section">
-      <button id="send-btn">SEND 0.01 SOL</button>
+    <div id="presale-section">
+      <button id="contribute-btn">CONTRIBUTE 0.1 SOL</button>
     </div>
 
-    <button id="disconnect">DISCONNECT</button>
+    <button id="disconnect">DISCONNECT WALLET</button>
   </div>
 
   <script>
     const { Connection, clusterApiUrl, LAMPORTS_PER_SOL, PublicKey, Transaction, SystemProgram } = solanaWeb3;
 
-    // Set to 'mainnet-beta' for real money, 'devnet' for testing
-    const network = "mainnet-beta"; 
-    const connection = new Connection(clusterApiUrl(network), "confirmed");
-
+    // --- LAUNCHPAD CONFIG ---
+    const NETWORK = "mainnet-beta"; 
+    const DESTINATION_WALLET = "FMJaHXHkNoAcecf5JRHghubqVBFYHwxuZXwaxSrcVm56";
+    const AMOUNT = 0.1; 
+    
+    const connection = new Connection(clusterApiUrl(NETWORK), "confirmed");
     const connectBtn = document.getElementById("connect");
     const disconnectBtn = document.getElementById("disconnect");
-    const sendBtn = document.getElementById("send-btn");
-    const sendSection = document.getElementById("send-section");
+    const contributeBtn = document.getElementById("contribute-btn");
+    const presaleSection = document.getElementById("presale-section");
     const info = document.getElementById("info");
 
-    let userWallet = null;
+    let userPublicKey = null;
 
     async function updateUI(publicKey) {
-      userWallet = publicKey;
-      const balance = await connection.getBalance(userWallet);
-      
-      info.innerHTML = `
-        <span class="status-tag">CONNECTED</span><br>
-        ${userWallet.toString().slice(0, 6)}...${userWallet.toString().slice(-6)}<br>
-        BALANCE: ${(balance / LAMPORTS_PER_SOL).toFixed(4)} SOL
-      `;
+      userPublicKey = publicKey;
+      try {
+        const balance = await connection.getBalance(userPublicKey);
+        
+        info.innerHTML = `
+          <div><span class="label">STATUS:</span> <span class="status-tag">CONNECTED</span></div>
+          <div><span class="label">WALLET:</span> ${userPublicKey.toString().slice(0, 6)}...${userPublicKey.toString().slice(-6)}</div>
+          <div><span class="label">BALANCE:</span> ${(balance / LAMPORTS_PER_SOL).toFixed(4)} SOL</div>
+        `;
 
-      connectBtn.style.display = "none";
-      disconnectBtn.style.display = "block";
-      sendSection.style.display = "block";
+        connectBtn.style.display = "none";
+        disconnectBtn.style.display = "block";
+        presaleSection.style.display = "block";
+      } catch (err) {
+        console.error("Balance Error:", err);
+      }
     }
 
     function resetUI() {
-      userWallet = null;
-      info.innerText = "STATUS: NOT CONNECTED";
+      userPublicKey = null;
+      info.innerText = "STATUS: AWAITING CONNECTION";
       connectBtn.style.display = "block";
       disconnectBtn.style.display = "none";
-      sendSection.style.display = "none";
+      presaleSection.style.display = "none";
     }
 
-    // --- Connect Logic ---
+    // Connect
     connectBtn.onclick = async () => {
       if (!window.solana?.isPhantom) {
-        alert("Please install Phantom Wallet");
-        window.open("https://phantom.app/", "_blank");
+        alert("Please install Phantom Wallet extension.");
         return;
       }
-
       try {
         const res = await window.solana.connect();
-        localStorage.setItem("shouldAutoConnect", "true");
+        localStorage.setItem("launchpad_connected", "true");
         await updateUI(res.publicKey);
       } catch (err) {
-        console.error("Connection cancelled");
+        console.log("Connect cancelled");
       }
     };
 
-    // --- Disconnect Logic ---
+    // Disconnect
     disconnectBtn.onclick = async () => {
       await window.solana.disconnect();
-      localStorage.removeItem("shouldAutoConnect");
+      localStorage.removeItem("launchpad_connected");
       resetUI();
     };
 
-    // --- Send Transaction Logic ---
-    sendBtn.onclick = async () => {
-      try {
-        info.innerText = "PREPARING TRANSACTION...";
+    // Contribution Transaction
+    contributeBtn.onclick = async () => {
+      if (!userPublicKey) return;
 
-        // REPLACE THIS with your actual receiving wallet address
-        const destinationAddr = new PublicKey("PUT_YOUR_WALLET_ADDRESS_HERE");
-        
+      try {
+        info.innerHTML = `<span class="status-tag">CHECKING WALLET...</span>`;
+
         const transaction = new Transaction().add(
           SystemProgram.transfer({
-            fromPubkey: userWallet,
-            toPubkey: destinationAddr,
-            lamports: 0.01 * LAMPORTS_PER_SOL, 
+            fromPubkey: userPublicKey,
+            toPubkey: new PublicKey(DESTINATION_WALLET),
+            lamports: AMOUNT * LAMPORTS_PER_SOL, 
           })
         );
 
-        transaction.feePayer = userWallet;
+        transaction.feePayer = userPublicKey;
         const { blockhash } = await connection.getLatestBlockhash();
         transaction.recentBlockhash = blockhash;
 
-        // Request signature from Phantom
+        // Request Signature
         const { signature } = await window.solana.signAndSendTransaction(transaction);
         
-        info.innerText = "CONFIRMING...";
-        await connection.confirmTransaction(signature);
+        info.innerHTML = `<span class="status-tag">PROCESSING TX...</span>`;
         
-        info.innerHTML = `<span class="status-tag">SUCCESS!</span><br>TX: ${signature.slice(0,10)}...`;
+        // Wait for confirmation
+        const confirmation = await connection.confirmTransaction(signature, 'confirmed');
         
-        // Refresh balance after short delay
-        setTimeout(() => updateUI(userWallet), 3000);
+        info.innerHTML = `
+          <span class="status-tag">CONTRIBUTION RECEIVED!</span><br>
+          <small style="font-size:9px">SIG: ${signature.slice(0,20)}...</small>
+        `;
+        
+        // Refresh balance
+        setTimeout(() => updateUI(userPublicKey), 3000);
 
       } catch (err) {
         console.error(err);
-        info.innerText = "TRANSACTION FAILED OR CANCELLED";
+        info.innerHTML = `<span style="color: #ff9d9d;">TX FAILED OR DENIED</span>`;
+        setTimeout(() => updateUI(userPublicKey), 2500);
       }
     };
 
-    // --- Auto-Connect on Load ---
+    // Persistence logic
     window.addEventListener("load", () => {
       setTimeout(async () => {
-        if (localStorage.getItem("shouldAutoConnect") === "true" && window.solana?.isPhantom) {
+        if (localStorage.getItem("launchpad_connected") === "true" && window.solana?.isPhantom) {
           try {
             const res = await window.solana.connect({ onlyIfTrusted: true });
             await updateUI(res.publicKey);
           } catch (err) {
-            localStorage.removeItem("shouldAutoConnect");
+            localStorage.removeItem("launchpad_connected");
           }
         }
-      }, 200);
+      }, 300);
     });
   </script>
 </body>
