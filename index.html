@@ -1,120 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Wallet Phase 2</title>
+  <meta charset="UTF-8" />
+  <title>SOLANA CONNECT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<style>
-body {
-  background:#7b0000;
-  color:white;
-  font-family: system-ui;
-  text-transform: uppercase;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-  margin:0;
-}
+  <!-- Solana Web3 -->
+  <script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.min.js"></script>
 
-.card {
-  text-align:center;
-}
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+      text-transform: uppercase;
+    }
 
-button {
-  background:white;
-  color:#1d4ed8;
-  border:none;
-  padding:16px 24px;
-  font-size:18px;
-  font-weight:bold;
-  border-radius:12px;
-  margin-top:12px;
-}
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: #7a0000; /* dark red, not burgundy */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
 
-#info {
-  margin-top:20px;
-  line-height:1.6;
-}
-</style>
+    .card {
+      background: #8f0000;
+      padding: 24px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 22px;
+      letter-spacing: 1px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 12px;
+      border: none;
+      border-radius: 8px;
+      background: white;
+      color: #0047ff;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:active {
+      opacity: 0.85;
+    }
+
+    #disconnect {
+      display: none;
+    }
+
+    #info {
+      margin-top: 16px;
+      font-size: 13px;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+  </style>
 </head>
 
 <body>
-<div class="card">
-  <button id="connect">CONNECT WALLET</button>
+  <div class="card">
+    <h1>SOLANA WALLET</h1>
 
-  <div id="info">
-    NOT CONNECTED
+    <button id="connect">CONNECT WALLET</button>
+    <button id="disconnect">DISCONNECT</button>
+
+    <div id="info">NOT CONNECTED</div>
   </div>
 
-  <button id="disconnect" style="display:none;">DISCONNECT</button>
-</div>
+  <script>
+    const { Connection, clusterApiUrl, LAMPORTS_PER_SOL } = solanaWeb3;
 
-  <script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.min.js"></script>
-<script>
-const { Connection, clusterApiUrl, LAMPORTS_PER_SOL } = solanaWeb3;
+    const connection = new Connection(
+      clusterApiUrl("mainnet-beta"),
+      "confirmed"
+    );
 
-const connection = new Connection(clusterApiUrl("mainnet-beta"), "confirmed");
+    const connectBtn = document.getElementById("connect");
+    const disconnectBtn = document.getElementById("disconnect");
+    const info = document.getElementById("info");
 
-const connectBtn = document.getElementById("connect");
-const disconnectBtn = document.getElementById("disconnect");
-const info = document.getElementById("info");
+    let isConnecting = false;
 
-let isConnecting = false;
+    async function updateUI(pubkey) {
+      const balance = await connection.getBalance(pubkey);
 
-async function updateUI(pubkey) {
-  const balance = await connection.getBalance(pubkey);
+      info.innerHTML =
+        "CONNECTED<br>" +
+        "ADDR: " +
+        pubkey.toString().slice(0, 4) +
+        "..." +
+        pubkey.toString().slice(-4) +
+        "<br>BALANCE: " +
+        (balance / LAMPORTS_PER_SOL).toFixed(3) +
+        " SOL";
 
-  info.innerHTML =
-    "CONNECTED<br>" +
-    "ADDR: " + pubkey.toString().slice(0,4) + "..." + pubkey.toString().slice(-4) + "<br>" +
-    "BALANCE: " + (balance / LAMPORTS_PER_SOL).toFixed(3) + " SOL";
-
-  disconnectBtn.style.display = "block";
-}
-
-connectBtn.onclick = async () => {
-  if (isConnecting) return;
-  isConnecting = true;
-
-  if (!window.solana || !window.solana.isPhantom) {
-    info.innerText = "PHANTOM NOT FOUND";
-    isConnecting = false;
-    return;
-  }
-
-  try {
-    const res = await window.solana.connect();
-    localStorage.setItem("connected", "true");
-    await updateUI(res.publicKey);
-  } catch (err) {
-    info.innerText = "CONNECTION REJECTED";
-  } finally {
-    isConnecting = false;
-  }
-};
-
-disconnectBtn.onclick = async () => {
-  await window.solana.disconnect();
-  localStorage.removeItem("connected");
-  info.innerText = "NOT CONNECTED";
-  disconnectBtn.style.display = "none";
-};
-
-window.addEventListener("load", async () => {
-  if (
-    localStorage.getItem("connected") === "true" &&
-    window.solana?.isPhantom
-  ) {
-    try {
-      const res = await window.solana.connect({ onlyIfTrusted: true });
-      await updateUI(res.publicKey);
-    } catch {
-      localStorage.removeItem("connected");
+      disconnectBtn.style.display = "block";
     }
-  }
-});
-</script>
+
+    connectBtn.onclick = async () => {
+      if (isConnecting) return;
+      isConnecting = true;
+
+      if (!window.solana || !window.solana.isPhantom) {
+        info.innerText = "PHANTOM WALLET NOT FOUND";
+        isConnecting = false;
+        return;
+      }
+
+      try {
+        const res = await window.solana.connect();
+        localStorage.setItem("connected", "true");
+        await updateUI(res.publicKey);
+      } catch (err) {
+        info.innerText = "CONNECTION REJECTED";
+      } finally {
+        isConnecting = false;
+      }
+    };
+
+    disconnectBtn.onclick = async () => {
+      await window.solana.disconnect();
+      localStorage.removeItem("connected");
+      info.innerText = "NOT CONNECTED";
+      disconnectBtn.style.display = "none";
+    };
+
+    window.addEventListener("load", async () => {
+      if (
+        localStorage.getItem("connected") === "true" &&
+        window.solana?.isPhantom
+      ) {
+        try {
+          const res = await window.solana.connect({
+            onlyIfTrusted: true
+          });
+          await updateUI(res.publicKey);
+        } catch {
+          localStorage.removeItem("connected");
+        }
+      }
+    });
+  </script>
 </body>
 </html>
