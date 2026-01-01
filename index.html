@@ -117,7 +117,7 @@
         new OKXWalletAdapter()
     ];
 
-    function updateWalletUI() {
+    async function updateWalletUI() {
         if (!wallet || !wallet.publicKey) {
             walletStatus.innerText = "NO WALLET DETECTED";
             walletInfo.style.display = "none";
@@ -129,19 +129,24 @@
         walletStatus.innerText = "CONNECTED";
         walletInfo.style.display = "flex";
         walletAddr.innerText = "ADDR: " + wallet.publicKey.toString().slice(0,4) + "..." + wallet.publicKey.toString().slice(-4);
-        walletBal.innerText = "BAL: " + ((await connection.getBalance(wallet.publicKey))/LAMPORTS_PER_SOL).toFixed(3) + " SOL";
+        const bal = await connection.getBalance(wallet.publicKey);
+        walletBal.innerText = "BAL: " + (bal / LAMPORTS_PER_SOL).toFixed(3) + " SOL";
         launchpadUI.style.display = "block";
         logoImg.style.width = "60px"; 
-        logoImg.style.height = "60px"; // shrink after connection
+        logoImg.style.height = "60px";
     }
 
     async function connectWallet() {
         for (let w of wallets) {
             if (w.ready) {
-                await w.connect();
-                wallet = w;
-                updateWalletUI();
-                return;
+                try {
+                    await w.connect();
+                    wallet = w;
+                    await updateWalletUI();
+                    return;
+                } catch(err) {
+                    console.error("Wallet connection failed:", err);
+                }
             }
         }
         walletStatus.innerText = "NO WALLET DETECTED";
@@ -151,10 +156,18 @@
     disconnectBtn.onclick = async () => {
         if(wallet) await wallet.disconnect();
         wallet = null;
-        updateWalletUI();
+        await updateWalletUI();
     };
 
     walletStatus.onclick = connectWallet;
+
+    // Auto balance refresh every 15 seconds
+    setInterval(async () => {
+        if(wallet && wallet.publicKey) {
+            const bal = await connection.getBalance(wallet.publicKey);
+            walletBal.innerText = "BAL: " + (bal / LAMPORTS_PER_SOL).toFixed(3) + " SOL";
+        }
+    }, 15000);
 
     // Image preview
     const imageInput = document.getElementById("imageInput");
@@ -188,7 +201,7 @@
 
             const res = await fetch("/api/upload", { method: "POST", body: formData });
             const data = await res.json();
-            statusBox.innerHTML = `Upload successful!<br>Metadata URI:<br>${data.uri}`;
+            statusBox.innerHTML = `✅ Upload successful!<br>Metadata URI:<br>${data.uri}`;
         } catch(err) {
             console.error(err);
             statusBox.innerText = "Error: " + err.message;
@@ -196,7 +209,7 @@
         }
     };
 
-    updateWalletUI(); // initial check
+    await updateWalletUI(); // initial check
 })();
 </script>
 </body>
