@@ -51,8 +51,7 @@ button {
   <button id="disconnect" style="display:none;">DISCONNECT</button>
 </div>
 
-<script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.min.js"></script>
-
+  <script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.min.js"></script>
 <script>
 const { Connection, clusterApiUrl, LAMPORTS_PER_SOL } = solanaWeb3;
 
@@ -61,6 +60,8 @@ const connection = new Connection(clusterApiUrl("mainnet-beta"), "confirmed");
 const connectBtn = document.getElementById("connect");
 const disconnectBtn = document.getElementById("disconnect");
 const info = document.getElementById("info");
+
+let isConnecting = false;
 
 async function updateUI(pubkey) {
   const balance = await connection.getBalance(pubkey);
@@ -74,8 +75,12 @@ async function updateUI(pubkey) {
 }
 
 connectBtn.onclick = async () => {
+  if (isConnecting) return;
+  isConnecting = true;
+
   if (!window.solana || !window.solana.isPhantom) {
     info.innerText = "PHANTOM NOT FOUND";
+    isConnecting = false;
     return;
   }
 
@@ -83,8 +88,10 @@ connectBtn.onclick = async () => {
     const res = await window.solana.connect();
     localStorage.setItem("connected", "true");
     await updateUI(res.publicKey);
-  } catch {
+  } catch (err) {
     info.innerText = "CONNECTION REJECTED";
+  } finally {
+    isConnecting = false;
   }
 };
 
@@ -95,13 +102,17 @@ disconnectBtn.onclick = async () => {
   disconnectBtn.style.display = "none";
 };
 
-// AUTO RECONNECT
 window.addEventListener("load", async () => {
-  if (localStorage.getItem("connected") === "true" && window.solana?.isPhantom) {
+  if (
+    localStorage.getItem("connected") === "true" &&
+    window.solana?.isPhantom
+  ) {
     try {
       const res = await window.solana.connect({ onlyIfTrusted: true });
-      updateUI(res.publicKey);
-    } catch {}
+      await updateUI(res.publicKey);
+    } catch {
+      localStorage.removeItem("connected");
+    }
   }
 });
 </script>
