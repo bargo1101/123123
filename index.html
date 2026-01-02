@@ -1,258 +1,203 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MC TOKEN MINTER</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MC Launchpad</title>
 
-  <!-- Modern wallet adapter stack -->
-  <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
-  <script src="https://unpkg.com/@solana/wallet-adapter-base@0.9.23/dist/umd/index.min.js"></script>
-  <script src="https://unpkg.com/@solana/wallet-adapter-react@0.15.35/dist/umd/index.min.js"></script>
-  <script src="https://unpkg.com/@solana/wallet-adapter-wallets@0.19.32/dist/umd/index.min.js"></script>
-  <script src="https://unpkg.com/@solana/wallet-adapter-react-ui@0.9.35/dist/umd/index.min.js"></script>
-  <link href="https://unpkg.com/@solana/wallet-adapter-react-ui@0.9.35/styles.css" rel="stylesheet" />
+<script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
+<script src="https://unpkg.com/@solana/wallet-adapter-react-ui@0.9.35/dist/umd/index.min.js"></script>
+<link href="https://unpkg.com/@solana/wallet-adapter-react-ui@0.9.35/styles.css" rel="stylesheet"/>
 
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      background: linear-gradient(135deg, #0a0015 0%, #1a0033 100%);
-      color: #e0d0ff;
-      font-family: system-ui, -apple-system, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .banner {
-      width: 100%;
-      background: rgba(100, 0, 255, 0.12);
-      padding: 50px 20px;
-      text-align: center;
-      border-bottom: 1px solid rgba(140, 0, 255, 0.4);
-      position: relative;
-    }
-    .banner h1 {
-      font-size: 3.8rem;
-      letter-spacing: 8px;
-      background: linear-gradient(90deg, #a78bfa, #c084fc, #a78bfa);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      animation: pulse 5s infinite alternate;
-    }
-    @keyframes pulse { 0% { opacity: 0.92; } 100% { opacity: 1; } }
-    .card {
-      background: rgba(20, 10, 40, 0.75);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(140, 0, 255, 0.3);
-      border-radius: 20px;
-      padding: 40px 32px;
-      margin: 40px 20px;
-      width: 100%; max-width: 520px;
-      text-align: center;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-    }
-    #status {
-      font-size: 1.6rem;
-      font-weight: 700;
-      margin: 24px 0 16px;
-      min-height: 1.8em;
-      letter-spacing: 1px;
-    }
-    #balance {
-      font-size: 2rem;
-      color: #a78bfa;
-      margin-bottom: 32px;
-    }
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin: 32px 0;
-    }
-    .stat {
-      background: rgba(100, 0, 255, 0.15);
-      border: 1px solid rgba(140, 0, 255, 0.3);
-      border-radius: 12px;
-      padding: 16px 12px;
-      font-size: 0.95rem;
-    }
-    .stat strong {
-      display: block;
-      font-size: 1.4rem;
-      color: #c084fc;
-      margin-top: 6px;
-    }
-    .mint-btn {
-      width: 100%;
-      padding: 20px;
-      font-size: 1.5rem;
-      font-weight: bold;
-      background: linear-gradient(90deg, #7c3aed, #a78bfa);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      margin-top: 32px;
-      transition: all 0.2s;
-    }
-    .mint-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(124,58,237,0.5); }
-    .solana-bottom {
-      width: 100%;
-      height: 120px;
-      position: relative;
-      margin-top: auto;
-      margin-bottom: 40px;
-    }
-    .solana-bottom::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, transparent, #a78bfa 40%, #c084fc 60%, transparent);
-      height: 3px;
-      top: 50%;
-    }
-    .solana-spiral {
-      position: absolute;
-      bottom: -20px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 4rem;
-      color: #a78bfa;
-      opacity: 0.4;
-      letter-spacing: -8px;
-    }
-  </style>
+<style>
+*{box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif}
+body{
+  margin:0;
+  min-height:100vh;
+  background:radial-gradient(circle at top,#1a0033,#06000f);
+  color:#e9ddff;
+}
+.frame{
+  position:fixed;inset:10px;
+  border:3px solid #7c3aed;
+  border-radius:24px;
+  box-shadow:0 0 40px rgba(124,58,237,.6);
+  pointer-events:none;
+}
+header{
+  text-align:center;
+  padding:40px 20px;
+}
+header h1{
+  font-size:3.6rem;
+  background:linear-gradient(90deg,#a78bfa,#c084fc);
+  -webkit-background-clip:text;
+  color:transparent;
+}
+header p{opacity:.85;font-size:1.2rem}
+
+.container{
+  max-width:620px;
+  margin:0 auto;
+  background:rgba(15,5,40,.8);
+  border-radius:24px;
+  padding:32px;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
+}
+.status{
+  font-size:1.6rem;
+  font-weight:700;
+  text-align:center;
+}
+.balance{
+  text-align:center;
+  font-size:1.4rem;
+  color:#a78bfa;
+  margin:12px 0 24px;
+}
+
+form{
+  display:grid;
+  gap:14px;
+}
+input{
+  padding:14px;
+  border-radius:12px;
+  border:1px solid #5b21b6;
+  background:#0b0220;
+  color:#fff;
+  font-size:1rem;
+}
+button{
+  padding:18px;
+  font-size:1.4rem;
+  font-weight:700;
+  border:none;
+  border-radius:14px;
+  cursor:pointer;
+  background:linear-gradient(90deg,#7c3aed,#a78bfa);
+  color:#fff;
+}
+button:disabled{opacity:.5;cursor:not-allowed}
+
+.tokens{
+  margin-top:32px;
+}
+.token{
+  background:rgba(90,0,200,.15);
+  padding:14px;
+  border-radius:12px;
+  margin-bottom:10px;
+  font-size:.95rem;
+  word-break:break-all;
+}
+footer{
+  text-align:center;
+  margin:40px 0;
+  opacity:.6;
+}
+.solana{
+  font-size:3rem;
+  letter-spacing:-8px;
+}
+</style>
 </head>
+
 <body>
+<div class="frame"></div>
 
-  <div class="banner">
-    <h1>MC TOKEN</h1>
-    <p style="margin-top:12px; font-size:1.2rem; opacity:0.85;">
-      Fair Launch • Mint Revoked • Community First
-    </p>
+<header>
+  <h1>MC Launchpad</h1>
+  <p>Create & launch Solana tokens instantly</p>
+</header>
+
+<div class="container">
+  <div class="status" id="status">NOT CONNECTED</div>
+  <div class="balance" id="balance">Balance: — SOL</div>
+
+  <div style="margin:24px 0;text-align:center">
+    <div class="wallet-adapter-button-container"></div>
   </div>
 
-  <div class="card">
-    <div id="status">NOT CONNECTED</div>
+  <form id="launchForm">
+    <input id="name" placeholder="Token Name" required>
+    <input id="symbol" placeholder="Symbol (e.g. MC)" required>
+    <input id="supply" type="number" placeholder="Total Supply" required>
+    <button id="createBtn" disabled>Create Token</button>
+  </form>
 
-    <div id="balance">Balance: — SOL</div>
+  <div class="tokens" id="tokens"></div>
+</div>
 
-    <!-- Wallet connect button will be injected here by adapter -->
-    <div style="margin: 32px 0; min-height: 56px;">
-      <div class="wallet-adapter-button-container"></div>
-    </div>
+<footer>
+  <div class="solana">⟡⟡⟡</div>
+  Solana Token Factory
+</footer>
 
-    <div class="stats-grid">
-      <div class="stat">
-        Market Cap
-        <strong id="mc">—</strong>
-      </div>
-      <div class="stat">
-        Liquidity
-        <strong id="liquidity">—</strong>
-      </div>
-      <div class="stat">
-        Holders
-        <strong id="holders">—</strong>
-      </div>
-    </div>
+<script>
+const { Connection, clusterApiUrl, LAMPORTS_PER_SOL, PublicKey } = solanaWeb3;
+const connection = new Connection(clusterApiUrl("mainnet-beta"),"confirmed");
+let publicKey=null;
+let poller=null;
 
-    <button class="mint-btn" id="mintButton" disabled>
-      MINT MC TOKENS
-    </button>
-  </div>
+window.addEventListener("wallet-adapter-ready-state-change",e=>{
+  if(e.detail?.publicKey){
+    publicKey=new PublicKey(e.detail.publicKey);
+    onConnect();
+  }else onDisconnect();
+});
 
-  <div class="solana-bottom">
-    <div class="solana-spiral">⟡⟡⟡</div>
-  </div>
+async function onConnect(){
+  const addr=publicKey.toBase58();
+  document.getElementById("status").textContent=
+    "CONNECTED TO "+addr.slice(0,6)+"..."+addr.slice(-6);
+  document.getElementById("createBtn").disabled=false;
+  updateBalance();
+  poller=setInterval(updateBalance,10000);
+}
+function onDisconnect(){
+  publicKey=null;
+  document.getElementById("status").textContent="NOT CONNECTED";
+  document.getElementById("balance").textContent="Balance: — SOL";
+  document.getElementById("createBtn").disabled=true;
+  clearInterval(poller);
+}
+async function updateBalance(){
+  const bal=await connection.getBalance(publicKey);
+  document.getElementById("balance").textContent=
+    "Balance: "+(bal/LAMPORTS_PER_SOL).toFixed(4)+" SOL";
+}
 
-  <script>
-    // REPLACE THIS WITH YOUR ACTUAL TOKEN MINT ADDRESS
-    const TOKEN_ADDRESS = "YOUR_TOKEN_MINT_ADDRESS_HERE"; // ←←← PUT YOUR TOKEN CA HERE
-
-    const { Connection, clusterApiUrl, LAMPORTS_PER_SOL } = solanaWeb3;
-    const connection = new Connection(clusterApiUrl("mainnet-beta"), "confirmed");
-
-    let publicKey = null;
-
-    // Listen for wallet adapter events (this is how modern adapters work)
-    window.addEventListener("wallet-adapter-ready-state-change", (e) => {
-      if (e.detail?.publicKey) {
-        publicKey = new solanaWeb3.PublicKey(e.detail.publicKey);
-        updateUI();
-        startPolling();
-        document.getElementById("mintButton").disabled = false;
-      } else {
-        publicKey = null;
-        document.getElementById("status").textContent = "NOT CONNECTED";
-        document.getElementById("balance").textContent = "Balance: — SOL";
-        document.getElementById("mintButton").disabled = true;
-        resetStats();
-      }
+document.getElementById("launchForm").onsubmit=async e=>{
+  e.preventDefault();
+  const btn=document.getElementById("createBtn");
+  btn.disabled=true;
+  btn.textContent="Creating...";
+  const payload={
+    name: name.value,
+    symbol: symbol.value,
+    supply: supply.value,
+    creator: publicKey.toBase58()
+  };
+  try{
+    const res=await fetch("/api/create-token",{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify(payload)
     });
+    const data=await res.json();
+    addToken(data.mint);
+  }catch(err){ alert("Creation failed"); }
+  btn.textContent="Create Token";
+  btn.disabled=false;
+};
 
-    async function updateUI() {
-      if (!publicKey) return;
-      const addr = publicKey.toBase58();
-      const short = addr.slice(0,6) + "..." + addr.slice(-6);
-      document.getElementById("status").textContent = `CONNECTED TO ${short}`;
-      updateBalance();
-    }
-
-    async function updateBalance() {
-      if (!publicKey) return;
-      try {
-        const bal = await connection.getBalance(publicKey);
-        const sol = (bal / LAMPORTS_PER_SOL).toFixed(4);
-        document.getElementById("balance").textContent = `Balance: ${sol} SOL`;
-      } catch (e) {}
-    }
-
-    async function fetchDexScreenerData() {
-      if (!TOKEN_ADDRESS || TOKEN_ADDRESS === "YOUR_TOKEN_MINT_ADDRESS_HERE") return;
-
-      try {
-        const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${TOKEN_ADDRESS}`);
-        const data = await res.json();
-
-        if (data.pairs && data.pairs.length > 0) {
-          const bestPair = data.pairs[0]; // usually the one with most liquidity
-
-          document.getElementById("mc").textContent = 
-            bestPair.fdV ? "$" + bestPair.fdV.toLocaleString() : "—";
-
-          document.getElementById("liquidity").textContent = 
-            bestPair.liquidity?.usd ? "$" + bestPair.liquidity.usd.toLocaleString() : "—";
-
-          // Holders not directly in DexScreener → placeholder or use Birdeye/Hellomoon later
-          document.getElementById("holders").textContent = "—";
-        }
-      } catch (e) {
-        resetStats();
-      }
-    }
-
-    function resetStats() {
-      document.getElementById("mc").textContent = "—";
-      document.getElementById("liquidity").textContent = "—";
-      document.getElementById("holders").textContent = "—";
-    }
-
-    function startPolling() {
-      updateBalance();
-      fetchDexScreenerData();
-      setInterval(() => {
-        updateBalance();
-        fetchDexScreenerData();
-      }, 12000); // ~every 12 seconds
-    }
-
-    // Mint button placeholder - put your Metaplex mint logic here later
-    document.getElementById("mintButton").onclick = () => {
-      alert("Mint transaction would start here (Metaplex + revoke authority logic goes here)");
-    };
-  </script>
+function addToken(mint){
+  const div=document.createElement("div");
+  div.className="token";
+  div.textContent="Token Created: "+mint;
+  document.getElementById("tokens").prepend(div);
+}
+</script>
 </body>
 </html>
