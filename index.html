@@ -1,140 +1,67 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MC Launchpad</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>MC Launchpad — Create Solana Token (mainnet)</title>
 
+<!-- Solana web3 (same as original) -->
 <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
-<script src="https://unpkg.com/@solana/wallet-adapter-react-ui@0.9.35/dist/umd/index.min.js"></script>
+
+<!-- SPL Token (browser iife build) - if this exact version isn't available you may update the version -->
+<script src="https://unpkg.com/@solana/spl-token@0.3.8/lib/index.iife.min.js"></script>
+
 <link href="https://unpkg.com/@solana/wallet-adapter-react-ui@0.9.35/styles.css" rel="stylesheet"/>
 
 <style>
 *{box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif}
-body{
-  margin:0;
-  min-height:100vh;
-  background:radial-gradient(circle at top,#1a0033,#06000f);
-  color:#e9ddff;
-}
-.frame{
-  position:fixed;inset:10px;
-  border:3px solid #7c3aed;
-  border-radius:24px;
-  box-shadow:0 0 40px rgba(124,58,237,.6);
-  pointer-events:none;
-}
-header{
-  text-align:center;
-  padding:40px 20px;
-}
-header h1{
-  font-size:3.6rem;
-  background:linear-gradient(90deg,#a78bfa,#c084fc);
-  -webkit-background-clip:text;
-  color:transparent;
-}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#1a0033,#06000f);color:#e9ddff}
+.frame{position:fixed;inset:10px;border:3px solid #7c3aed;border-radius:24px;box-shadow:0 0 40px rgba(124,58,237,.6);pointer-events:none}
+header{text-align:center;padding:40px 20px}
+header h1{font-size:3.6rem;background:linear-gradient(90deg,#a78bfa,#c084fc);-webkit-background-clip:text;color:transparent}
 header p{opacity:.85;font-size:1.2rem}
-
-.container{
-  max-width:620px;
-  margin:0 auto;
-  background:rgba(15,5,40,.8);
-  border-radius:24px;
-  padding:32px;
-  box-shadow:0 20px 60px rgba(0,0,0,.6);
-}
-.status{
-  font-size:1.6rem;
-  font-weight:700;
-  text-align:center;
-}
-.balance{
-  text-align:center;
-  font-size:1.4rem;
-  color:#a78bfa;
-  margin:12px 0 24px;
-}
-
-form{
-  display:grid;
-  gap:14px;
-}
-input{
-  padding:14px;
-  border-radius:12px;
-  border:1px solid #5b21b6;
-  background:#0b0220;
-  color:#fff;
-  font-size:1rem;
-}
-button{
-  padding:18px;
-  font-size:1.4rem;
-  font-weight:700;
-  border:none;
-  border-radius:14px;
-  cursor:pointer;
-  background:linear-gradient(90deg,#7c3aed,#a78bfa);
-  color:#fff;
-}
+.container{max-width:720px;margin:0 auto;background:rgba(15,5,40,.85);border-radius:24px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.status{font-size:1.4rem;font-weight:700;text-align:center}
+.balance{text-align:center;font-size:1.1rem;color:#a78bfa;margin:8px 0 18px}
+form{display:grid;gap:12px}
+input,select{padding:12px;border-radius:10px;border:1px solid #5b21b6;background:#0b0220;color:#fff;font-size:1rem}
+button{padding:14px;font-size:1.05rem;font-weight:700;border:none;border-radius:12px;cursor:pointer;background:linear-gradient(90deg,#7c3aed,#a78bfa);color:#fff}
 button:disabled{opacity:.5;cursor:not-allowed}
-
-#phantomBtn{
-  padding:10px 16px;
-  font-size:1rem;
-  margin-left:12px;
-  border-radius:12px;
-  background:linear-gradient(90deg,#06b6d4,#7c3aed);
-  color:#fff;
-  border:none;
-  cursor:pointer;
-}
-
-.tokens{
-  margin-top:32px;
-}
-.token{
-  background:rgba(90,0,200,.15);
-  padding:14px;
-  border-radius:12px;
-  margin-bottom:10px;
-  font-size:.95rem;
-  word-break:break-all;
-}
-footer{
-  text-align:center;
-  margin:40px 0;
-  opacity:.6;
-}
-.solana{
-  font-size:3rem;
-  letter-spacing:-8px;
-}
+#phantomBtn{padding:10px 16px;font-size:1rem;margin-left:12px;border-radius:12px;background:linear-gradient(90deg,#06b6d4,#7c3aed);color:#fff;border:none;cursor:pointer}
+.tokens{margin-top:22px}
+.token{background:rgba(90,0,200,.12);padding:10px;border-radius:10px;margin-bottom:8px;font-size:.95rem;word-break:break-all}
+footer{text-align:center;margin:30px 0;opacity:.6}
+.solana{font-size:3rem;letter-spacing:-8px}
+small.note{display:block;margin-top:6px;opacity:.75}
 </style>
 </head>
-
 <body>
 <div class="frame"></div>
 
 <header>
   <h1>MC Launchpad</h1>
-  <p>Create & launch Solana tokens instantly</p>
+  <p>Create & launch Solana tokens (mainnet)</p>
 </header>
 
 <div class="container">
   <div class="status" id="status">NOT CONNECTED</div>
   <div class="balance" id="balance">Balance: — SOL</div>
-  <div style="margin:24px 0;text-align:center">
-    <div class="wallet-adapter-button-container"></div>
-    <button id="phantomBtn" type="button">Connect Phantom Wallet</button>
+
+  <div style="margin:18px 0;text-align:center">
+    <button id="phantomBtn" type="button">Connect Phantom</button>
+    <small class="note">This page uses mainnet-beta. Real SOL will be spent for account creation and fees.</small>
   </div>
 
   <form id="launchForm">
-    <input id="name" placeholder="Token Name" required>
-    <input id="symbol" placeholder="Symbol (e.g. MC)" required>
-    <input id="supply" type="number" placeholder="Total Supply" required>
-    <button id="createBtn" disabled>Create Token</button>
+    <input id="name" placeholder="Token Name" required />
+    <input id="symbol" placeholder="Symbol (e.g. MC)" required />
+    <input id="supply" type="number" min="1" placeholder="Total Supply (whole tokens)" required />
+    <select id="decimals">
+      <option value="9" selected>Decimals: 9 (recommended)</option>
+      <option value="0">Decimals: 0</option>
+      <option value="6">Decimals: 6</option>
+    </select>
+    <button id="createBtn" disabled>Create Token (fee payer = connected wallet)</button>
   </form>
 
   <div class="tokens" id="tokens"></div>
@@ -146,108 +73,80 @@ footer{
 </footer>
 
 <script>
-const { Connection, clusterApiUrl, LAMPORTS_PER_SOL, PublicKey } = solanaWeb3;
-const connection = new Connection(clusterApiUrl("mainnet-beta"),"confirmed");
-let publicKey=null;
-let poller=null;
+/*
+  Key points implemented in this file:
+  - Uses mainnet-beta per your request (real SOL costs).
+  - Wallet (Phantom) is the fee payer for all instructions.
+  - Mint account is created locally (Keypair) and partial-signed locally.
+    Phantom signs the transaction (fee payer / mint authority operations).
+  - After minting, both MintTokens (mint) authority and FreezeAccount authority
+    are set to null (revoked/locked) — irreversible.
+  - Uses @solana/web3.js + @solana/spl-token browser bundles.
+*/
 
-window.addEventListener("wallet-adapter-ready-state-change",e=>{
-  if(e.detail?.publicKey){
-    publicKey=new PublicKey(e.detail.publicKey);
-    onConnect();
-  }else onDisconnect();
-});
+const { Connection, clusterApiUrl, PublicKey, SystemProgram, Transaction, Keypair } = solanaWeb3;
+const connection = new Connection(clusterApiUrl("mainnet-beta"), "confirmed");
 
-async function onConnect(){
-  if(!publicKey) return;
-  const addr=publicKey.toBase58();
-  document.getElementById("status").textContent=
-    "CONNECTED TO "+addr.slice(0,6)+"..."+addr.slice(-6);
-  document.getElementById("createBtn").disabled=false;
-  updateBalance();
-  if(poller) clearInterval(poller);
-  poller=setInterval(updateBalance,10000);
-  updatePhantomButton();
-}
-function onDisconnect(){
-  publicKey=null;
-  document.getElementById("status").textContent="NOT CONNECTED";
-  document.getElementById("balance").textContent="Balance: — SOL";
-  document.getElementById("createBtn").disabled=true;
-  if(poller) clearInterval(poller);
-  updatePhantomButton();
-}
-async function updateBalance(){
-  if(!publicKey) return;
-  try{
-    const bal=await connection.getBalance(publicKey);
-    document.getElementById("balance").textContent=
-      "Balance: "+(bal/LAMPORTS_PER_SOL).toFixed(4)+" SOL";
-  }catch(err){
-    console.error("Failed to fetch balance", err);
-  }
-}
+let publicKey = null;
+let poller = null;
 
-/* --- Phantom integration --- */
 const phantomBtn = document.getElementById("phantomBtn");
+const statusEl = document.getElementById("status");
+const balanceEl = document.getElementById("balance");
+const createBtn = document.getElementById("createBtn");
+const tokensEl = document.getElementById("tokens");
 
-function getPhantomProvider(){
-  if("solana" in window){
+function getPhantomProvider() {
+  if ("solana" in window) {
     const provider = window.solana;
-    if(provider && provider.isPhantom) return provider;
+    if (provider && provider.isPhantom) return provider;
   }
   return null;
 }
 
-function updatePhantomButton(){
+function updatePhantomButton() {
   const provider = getPhantomProvider();
-  if(!provider){
+  if (!provider) {
     phantomBtn.textContent = "Install Phantom";
     phantomBtn.onclick = () => window.open("https://phantom.app/", "_blank");
     phantomBtn.disabled = false;
     return;
   }
 
-  // provider exists
-  if(provider.isConnected){
-    phantomBtn.textContent = "Disconnect Phantom";
-  } else {
-    phantomBtn.textContent = "Connect Phantom";
-  }
-
+  phantomBtn.disabled = false;
   phantomBtn.onclick = async () => {
-    try{
-      if(provider.isConnected){
+    try {
+      if (provider.isConnected) {
         await provider.disconnect();
         // provider will emit 'disconnect' event handled below
-      }else{
-        const res = await provider.connect();
-        // res.publicKey is a PublicKey-like object; set our publicKey
-        publicKey = new PublicKey(res.publicKey.toString());
-        onConnect();
+      } else {
+        await provider.connect();
+        // provider will emit 'connect' event handled below
       }
-    }catch(err){
+    } catch (err) {
       console.error("Phantom connection error", err);
       alert("Wallet connection failed: " + (err?.message || err));
     }
   };
+
+  if (provider.isConnected) phantomBtn.textContent = "Disconnect Phantom";
+  else phantomBtn.textContent = "Connect Phantom";
 }
 
-// Attach provider events if available
-function attachProviderListeners(){
+function attachProviderListeners() {
   const provider = getPhantomProvider();
-  if(!provider) return;
+  if (!provider) return;
 
-  // avoid attaching multiple times
-  try{
+  try {
     provider.removeAllListeners?.("connect");
     provider.removeAllListeners?.("disconnect");
-  }catch(e){ /* ignore if not supported */ }
+  } catch (e) { /* ignore if not supported */ }
 
   provider.on("connect", (pk) => {
-    try{
-      publicKey = new PublicKey(pk.toString());
-    }catch(e){
+    try {
+      publicKey = new PublicKey(pk?.toString ? pk.toString() : pk);
+    } catch (e) {
+      // fallback
       publicKey = pk && pk.toString ? new PublicKey(pk.toString()) : null;
     }
     onConnect();
@@ -255,83 +154,207 @@ function attachProviderListeners(){
 
   provider.on("disconnect", () => {
     onDisconnect();
-<script>
-async function createTokenUserPays(name, symbol, supply) {
-  if (!publicKey) return alert("Connect your wallet first");
-  
+  });
+}
+
+async function onConnect() {
+  if (!getPhantomProvider() || !getPhantomProvider().isConnected) {
+    // provider isn't connected yet
+    updatePhantomButton();
+    return;
+  }
+
+  const provider = getPhantomProvider();
   try {
-    const provider = window.solana;
-    if (!provider || !provider.isPhantom) throw new Error("Phantom not found");
+    const pk = provider.publicKey;
+    publicKey = new PublicKey(pk.toString());
+  } catch (e) {
+    console.error("Failed reading provider publicKey", e);
+    publicKey = null;
+  }
 
-    // Connect again if needed
-    if (!provider.isConnected) await provider.connect();
+  if (!publicKey) return;
 
-    const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("mainnet-beta"), "confirmed");
-    
-    // Generate a new keypair for the mint
-    const mint = solanaWeb3.Keypair.generate();
+  const addr = publicKey.toBase58();
+  statusEl.textContent = "CONNECTED TO " + addr.slice(0, 6) + "..." + addr.slice(-6);
+  createBtn.disabled = false;
+  updateBalance();
+  if (poller) clearInterval(poller);
+  poller = setInterval(updateBalance, 15000);
+  updatePhantomButton();
+}
 
-    // Create transaction to create mint
-    const tx = new solanaWeb3.Transaction();
+function onDisconnect() {
+  publicKey = null;
+  statusEl.textContent = "NOT CONNECTED";
+  balanceEl.textContent = "Balance: — SOL";
+  createBtn.disabled = true;
+  if (poller) clearInterval(poller);
+  updatePhantomButton();
+}
 
-    const { createMintInstruction, getOrCreateAssociatedTokenAccount } = splToken;
+async function updateBalance() {
+  if (!publicKey) return;
+  try {
+    const bal = await connection.getBalance(publicKey);
+    balanceEl.textContent = "Balance: " + (bal / solanaWeb3.LAMPORTS_PER_SOL).toFixed(6) + " SOL";
+  } catch (err) {
+    console.error("Failed to fetch balance", err);
+  }
+}
 
-    // 1. Add instruction to create mint
-    tx.add(
-      splToken.createMintInstruction(
-        mint.publicKey,        // new mint pubkey
-        9,                     // decimals
-        publicKey,             // mint authority = user
-        publicKey,             // freeze authority = user
-        splToken.TOKEN_PROGRAM_ID
+// Utility to append minted token to list
+function addToken(mintAddress) {
+  const d = document.createElement("div");
+  d.className = "token";
+  d.textContent = "Mint created: " + mintAddress;
+  tokensEl.prepend(d);
+}
+
+/*
+  createTokenMainnet:
+  - name, symbol: used only for metadata (SPL token core doesn't store name/symbol on-chain without metadata program)
+  - supply: whole tokens in user-facing units; we multiply by 10^decimals when minting
+  - decimals: integer
+  Flow:
+  1) Create mint account (Keypair), allocate rent-exempt lamports, initialize mint with connected wallet as mint/freeze authority
+  2) Create associated token account for the wallet
+  3) Mint total supply to that ATA
+  4) Revoke (set to null) both MintTokens and FreezeAccount authorities (irreversible)
+  5) Send transaction: mint Keypair partial-signs, then wallet signs with Phantom, then we send raw tx
+*/
+async function createTokenMainnet(name, symbol, supplyStr, decimalsStr) {
+  if (!publicKey) return alert("Connect your wallet first");
+
+  const provider = getPhantomProvider();
+  if (!provider) return alert("Phantom not found");
+
+  // Input validation
+  const decimals = parseInt(decimalsStr || "9", 10);
+  if (isNaN(decimals) || decimals < 0 || decimals > 9) return alert("Invalid decimals");
+  const supply = BigInt(supplyStr || "0");
+  if (supply <= 0n) return alert("Supply must be > 0");
+
+  try {
+    // Create new mint keypair locally
+    const mint = Keypair.generate();
+
+    // SPL token constants from spl-token bundle
+    const TOKEN_PROGRAM_ID = splToken.TOKEN_PROGRAM_ID;
+    const ASSOCIATED_TOKEN_PROGRAM_ID = splToken.ASSOCIATED_TOKEN_PROGRAM_ID;
+    const MINT_SIZE = splToken.MINT_SIZE ?? 82; // fallback size if not exposed
+
+    // 1) rent exempt amount for mint account
+    const rentExempt = await connection.getMinimumBalanceForRentExemption(MINT_SIZE);
+
+    // Prepare instructions
+    const instructions = [];
+
+    // 1a) create account for mint (payer = wallet)
+    instructions.push(
+      SystemProgram.createAccount({
+        fromPubkey: publicKey,
+        newAccountPubkey: mint.publicKey,
+        space: MINT_SIZE,
+        lamports: rentExempt,
+        programId: TOKEN_PROGRAM_ID,
+      })
+    );
+
+    // 1b) initialize mint: mint authority = wallet, freeze authority = wallet
+    // The bundler provides createInitializeMintInstruction
+    instructions.push(
+      splToken.createInitializeMintInstruction(
+        mint.publicKey,        // mint pubkey
+        decimals,              // decimals
+        publicKey,             // mint authority
+        publicKey,             // freeze authority
+        TOKEN_PROGRAM_ID
       )
     );
 
-    // 2. Get/create associated token account
-    const tokenAccount = await splToken.getOrCreateAssociatedTokenAccount(
-      connection,
-      null,               // payer will sign via Phantom
-      mint.publicKey,
-      publicKey
+    // 2) create associated token account for wallet (payer = wallet)
+    const associatedTokenAddress = await splToken.getAssociatedTokenAddress(
+      mint.publicKey, // mint
+      publicKey,      // owner
+      false,          // allowOwnerOffCurve
+      TOKEN_PROGRAM_ID,
+      ASSOCIATED_TOKEN_PROGRAM_ID
     );
 
-    // 3. Mint tokens to the user's token account
-    tx.add(
-      splToken.mintToInstruction(
+    // Only add createAssociatedTokenAccount instruction if account doesn't exist
+    const ataInfo = await connection.getAccountInfo(associatedTokenAddress);
+    if (!ataInfo) {
+      instructions.push(
+        splToken.createAssociatedTokenAccountInstruction(
+          publicKey,               // payer
+          associatedTokenAddress,  // associated token account
+          publicKey,               // owner
+          mint.publicKey,          // mint
+          TOKEN_PROGRAM_ID,
+          ASSOCIATED_TOKEN_PROGRAM_ID
+        )
+      );
+    }
+
+    // 3) mintTo instruction: amount must be in smallest units
+    const amountToMint = supply * (10n ** BigInt(decimals));
+    instructions.push(
+      splToken.createMintToInstruction(
         mint.publicKey,
-        tokenAccount.address,
-        publicKey,
-        Number(supply) * 10 ** 9,  // adjust for decimals
-        [],
-        splToken.TOKEN_PROGRAM_ID
+        associatedTokenAddress,
+        publicKey, // authority (wallet)
+        amountToMint,
+        [], // signers (none here because wallet signs)
+        TOKEN_PROGRAM_ID
       )
     );
 
-    // 4. Revoke mint & freeze authority so mint is locked
-    tx.add(
-      splToken.setAuthorityInstruction(
+    // 4) Revoke mint and freeze authorities (set to null) => irreversible
+    instructions.push(
+      splToken.createSetAuthorityInstruction(
         mint.publicKey,
         publicKey,
         splToken.AuthorityType.MintTokens,
-        null
-      ),
-      splToken.setAuthorityInstruction(
+        null,
+        TOKEN_PROGRAM_ID
+      )
+    );
+    instructions.push(
+      splToken.createSetAuthorityInstruction(
         mint.publicKey,
         publicKey,
         splToken.AuthorityType.FreezeAccount,
-        null
+        null,
+        TOKEN_PROGRAM_ID
       )
     );
 
-    // Send transaction via Phantom
-    const { signature } = await provider.signAndSendTransaction(tx);
-    await connection.confirmTransaction(signature, "confirmed");
+    // Build transaction
+    const tx = new Transaction();
+    tx.feePayer = publicKey;
+    instructions.forEach(ix => tx.add(ix));
 
-    alert("Token minted: " + mint.publicKey.toBase58());
+    // Recent blockhash
+    tx.recentBlockhash = (await connection.getRecentBlockhash("finalized")).blockhash;
+
+    // Partial sign with mint Keypair (mint account is a signer)
+    tx.partialSign(mint);
+
+    // Ask wallet to sign (Phantom will add its signature as fee payer and any required owner signatures)
+    const signedTx = await provider.signTransaction(tx);
+
+    // Serialize and send
+    const raw = signedTx.serialize();
+    const sig = await connection.sendRawTransaction(raw, { skipPreflight: false, preflightCommitment: "confirmed" });
+
+    // Wait for confirmation
+    await connection.confirmTransaction(sig, "confirmed");
+
+    // Done
     addToken(mint.publicKey.toBase58());
-
-    // Update balance
     updateBalance();
+    alert(`Token created: ${mint.publicKey.toBase58()}\nTransaction: ${sig}\nNote: mint and freeze authorities have been revoked (irreversible)`);
 
   } catch (err) {
     console.error("Mint failed:", err);
@@ -339,16 +362,41 @@ async function createTokenUserPays(name, symbol, supply) {
   }
 }
 
-// Replace your form submit
-document.getElementById("launchForm").onsubmit = async e => {
+// Wiring up UI
+attachProviderListeners();
+updatePhantomButton();
+
+// In case Phantom is already available and connected on load
+(async () => {
+  const p = getPhantomProvider();
+  if (p) {
+    // attempt to set publicKey if already connected
+    if (p.isConnected && p.publicKey) {
+      publicKey = new PublicKey(p.publicKey.toString());
+      onConnect();
+    }
+  }
+})();
+
+document.getElementById("launchForm").onsubmit = async (e) => {
   e.preventDefault();
   const btn = document.getElementById("createBtn");
-  btn.disabled = true;
-  btn.textContent = "Creating...";
-  await createTokenUserPays(name.value, symbol.value, supply.value);
-  btn.textContent = "Create Token";
-  btn.disabled = false;
+  const name = document.getElementById("name").value.trim();
+  const symbol = document.getElementById("symbol").value.trim();
+  const supply = document.getElementById("supply").value.trim();
+  const decimals = document.getElementById("decimals").value;
+
+  if (!name || !symbol || !supply) return alert("Please fill required fields");
+
+  try {
+    btn.disabled = true;
+    btn.textContent = "Creating token (mainnet)...";
+    await createTokenMainnet(name, symbol, supply, decimals);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Create Token (fee payer = connected wallet)";
+  }
 };
-  </script>
+</script>
 </body>
 </html>
