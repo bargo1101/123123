@@ -1,201 +1,254 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>VOID LAUNCH — memecoin crematorium 2026</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>VOID LAUNCH — memecoin crematorium 2026</title>
 
-    <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
-    <script src="https://unpkg.com/@solana/spl-token@0.4.8/lib/index.iife.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.min.js"></script>
+  <!-- Solana web3 and spl-token (IIFE builds) -->
+  <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
+  <script src="https://unpkg.com/@solana/spl-token@0.4.8/lib/index.iife.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.min.js"></script>
 
-    <style>
-        :root{--bg:#000;--accent:#ff00aa;--text:#f0f;--glass:rgba(15,0,25,0.85)}
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{
-            min-height:100vh;
-            background:radial-gradient(circle at 50% 50%,#1a0033,#000);
-            color:var(--text);
-            font-family:'Courier New', monospace;
-            display:flex;flex-direction:column;align-items:center;
-            padding:2rem;
-        }
-        .container{
-            width:100%;max-width:500px;
-            background:var(--glass);
-            border:1px solid var(--accent);
-            padding:2rem;border-radius:15px;
-            box-shadow:0 0 30px rgba(255,0,170,0.3);
-        }
-        h1{text-align:center;margin-bottom:1.5rem;letter-spacing:4px;text-shadow:0 0 10px var(--accent);}
-        .status-bar{
-            background:rgba(0,0,0,0.5);padding:10px;
-            margin-bottom:20px;text-align:center;font-size:0.8rem;
-            border-bottom:1px solid var(--accent);color:#0ff;
-        }
-        input, select{
-            width:100%;padding:12px;margin:8px 0;
-            background:#111;border:1px solid #444;color:#fff;
-            border-radius:5px;outline:none;
-        }
-        input:focus{border-color:var(--accent);}
-        button{
-            width:100%;padding:15px;margin-top:15px;
-            background:var(--accent);color:#000;font-weight:bold;
-            border:none;cursor:pointer;text-transform:uppercase;
-        }
-        button:hover{filter:brightness(1.2);}
-        button:disabled{background:#333;color:#666;cursor:not-allowed;}
-        .log-box{
-            margin-top:20px;padding:10px;font-size:0.75rem;
-            background:#000;border:1px dashed var(--accent);
-            word-break:break-all;display:none;
-        }
-        a{color:#0ff;}
-    </style>
+  <style>
+    :root{--bg:#000;--accent:#ff00aa;--text:#f0;--glass:rgba(15,0,25,0.85)}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      min-height:100vh;background:radial-gradient(circle at 50% 50%,#1a0033,#000);
+      color:var(--text);font-family:'Courier New',monospace;display:flex;flex-direction:column;
+      align-items:center;padding:2rem;
+    }
+    .container{width:100%;max-width:500px;background:var(--glass);border:1px solid var(--accent);
+      padding:2rem;border-radius:15px;box-shadow:0 0 30px rgba(255,0,170,0.3);}
+    h1{text-align:center;margin-bottom:1.5rem;letter-spacing:4px;text-shadow:0 0 10px var(--accent);}
+    .status-bar{background:rgba(0,0,0,0.5);padding:10px;margin-bottom:20px;text-align:center;font-size:0.9rem;
+      border-bottom:1px solid var(--accent);color:#0ff;}
+    input,select{width:100%;padding:12px;margin:8px 0;background:#111;border:1px solid #444;color:#fff;border-radius:5px;outline:none;}
+    input:focus{border-color:var(--accent);}
+    button{width:100%;padding:15px;margin-top:15px;background:var(--accent);color:#000;font-weight:bold;border:none;cursor:pointer;text-transform:uppercase;}
+    button:hover{filter:brightness(1.2);} button:disabled{background:#333;color:#666;cursor:not-allowed;}
+    .log-box{margin-top:20px;padding:10px;font-size:0.75rem;background:#000;border:1px dashed var(--accent);word-break:break-all;display:none;}
+    a{color:#0ff;}
+    .warning{color:#ff77aa;font-size:0.9rem;margin-top:0.5rem}
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h1>VOID LAUNCH</h1>
+    <div class="status-bar" id="status">INITIALIZING SYSTEMS...</div>
 
-    <div class="container">
-        <h1>VOID LAUNCH</h1>
-        <div class="status-bar" id="status">INITIALIZING SYSTEMS...</div>
-        
-        <button id="connectBtn">CONNECT PHANTOM</button>
+    <button id="connectBtn">CONNECT PHANTOM</button>
 
-        <form id="launchForm" style="display:none;">
-            <input type="text" id="name" placeholder="Token Name" required>
-            <input type="text" id="symbol" placeholder="Symbol" maxlength="10" required>
-            <input type="number" id="supply" placeholder="Total Supply" required>
-            <select id="decimals">
-                <option value="9">9 Decimals (Standard)</option>
-                <option value="6">6 Decimals (USDC Style)</option>
-                <option value="0">0 Decimals (Chaos)</option>
-            </select>
-            <button type="submit" id="createBtn">BIRTH THE ABOMINATION</button>
-        </form>
+    <form id="launchForm" style="display:none;">
+      <input type="text" id="name" placeholder="Token Name (optional)">
+      <input type="text" id="symbol" placeholder="Symbol (max 10)" maxlength="10" required>
+      <input type="number" id="supply" placeholder="Total Supply (integer)" required min="1" step="1">
+      <select id="decimals">
+        <option value="9">9 Decimals (Standard)</option>
+        <option value="6">6 Decimals (USDC Style)</option>
+        <option value="0">0 Decimals (Chaos)</option>
+      </select>
+      <div class="warning">Revoking mint/freeze authorities is irreversible. Make sure this is desired.</div>
+      <button type="submit" id="createBtn">BIRTH THE ABOMINATION</button>
+    </form>
 
-        <div id="log" class="log-box"></div>
-    </div>
+    <div id="log" class="log-box" aria-live="polite"></div>
+  </div>
 
 <script>
-// Fix for Buffer in browser environments
-window.Buffer = buffer.Buffer;
+  // Buffer polyfill for browser
+  window.Buffer = buffer.Buffer;
 
-const { Connection, PublicKey, Keypair, Transaction, SystemProgram, ComputeBudgetProgram } = solanaWeb3;
-const { TOKEN_PROGRAM_ID, createInitializeMintInstruction, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, createMintToInstruction, createSetAuthorityInstruction, MINT_SIZE } = splToken;
+  const { Connection, PublicKey, Keypair, Transaction, SystemProgram, ComputeBudgetProgram } = solanaWeb3;
+  const {
+    TOKEN_PROGRAM_ID,
+    createInitializeMintInstruction,
+    getAssociatedTokenAddress,
+    createAssociatedTokenAccountInstruction,
+    createMintToInstruction,
+    createSetAuthorityInstruction,
+    MINT_SIZE,
+    AuthorityType
+  } = splToken;
 
-const statusEl = document.getElementById('status');
-const connectBtn = document.getElementById('connectBtn');
-const launchForm = document.getElementById('launchForm');
-const logBox = document.getElementById('log');
+  const statusEl = document.getElementById('status');
+  const connectBtn = document.getElementById('connectBtn');
+  const launchForm = document.getElementById('launchForm');
+  const logBox = document.getElementById('log');
 
-let userWallet = null;
-const connection = new Connection("https://api.mainnet-beta.solana.com", "confirmed");
+  let provider = null;       // wallet provider object (kept for reuse)
+  let userPubkey = null;
+  const connection = new Connection("https://api.mainnet-beta.solana.com", "confirmed");
 
-// --- CONNECTION LOGIC ---
-async function handleConnect() {
+  function log(msg) {
+    logBox.style.display = 'block';
+    logBox.innerHTML += msg + "<br>";
+  }
+  function setStatus(t) { statusEl.textContent = t; }
+
+  async function handleConnect() {
     try {
-        // Look for Phantom specifically
-        const provider = window.phantom?.solana || window.solana;
+      // Prefer Phantom provider object (window.phantom?.solana) but accept injected window.solana as fallback
+      provider = window.phantom?.solana || window.solana;
+      if (!provider) {
+        setStatus("PHANTOM NOT FOUND");
+        // Provide user friendly instructions instead of forcing a new tab
+        log('No Phantom wallet detected. Install Phantom from https://phantom.app/');
+        return;
+      }
 
-        if (!provider) {
-            statusEl.textContent = "PHANTOM NOT FOUND";
-            window.open("https://phantom.app/", "_blank");
-            return;
-        }
-
-        statusEl.textContent = "AWAITING WALLET APPROVAL...";
-        const resp = await provider.connect();
-        userWallet = resp.publicKey;
-
-        statusEl.textContent = `CONNECTED: ${userWallet.toString().slice(0,6)}...${userWallet.toString().slice(-4)}`;
-        connectBtn.style.display = 'none';
-        launchForm.style.display = 'block';
+      setStatus("AWAITING WALLET APPROVAL...");
+      // Request connection
+      const resp = await provider.connect();
+      // Phantom returns a PublicKey in resp.publicKey
+      userPubkey = resp.publicKey;
+      setStatus(`CONNECTED: ${userPubkey.toString().slice(0,6)}...${userPubkey.toString().slice(-4)}`);
+      connectBtn.style.display = 'none';
+      launchForm.style.display = 'block';
     } catch (err) {
-        console.error("Connection Error:", err);
-        statusEl.textContent = "CONNECTION REJECTED";
+      console.error("Connection Error:", err);
+      setStatus("CONNECTION REJECTED");
+      log("Connection rejected or failed: " + (err?.message || err));
     }
-}
+  }
 
-connectBtn.onclick = handleConnect;
+  connectBtn.onclick = handleConnect;
 
-// --- TOKEN CREATION LOGIC ---
-launchForm.onsubmit = async (e) => {
+  // Validate inputs
+  function validateInputs({ symbol, supply, decimals }) {
+    if (!symbol || symbol.trim().length === 0) throw new Error("Symbol is required.");
+    if (!/^[A-Za-z0-9-_]{1,10}$/.test(symbol)) throw new Error("Symbol must be 1-10 chars: letters, numbers, - or _.");
+    const s = Number(supply);
+    if (!Number.isFinite(s) || !Number.isInteger(s) || s <= 0) throw new Error("Supply must be a positive integer.");
+    if (![0,6,9].includes(Number(decimals))) throw new Error("Invalid decimals.");
+  }
+
+  launchForm.onsubmit = async (e) => {
     e.preventDefault();
     const createBtn = document.getElementById('createBtn');
-    
-    const name = document.getElementById('name').value;
-    const symbol = document.getElementById('symbol').value;
+
+    const name = document.getElementById('name').value || "";
+    const symbol = document.getElementById('symbol').value.trim();
     const supply = document.getElementById('supply').value;
-    const decimals = parseInt(document.getElementById('decimals').value);
+    const decimals = Number(document.getElementById('decimals').value);
+
+    try {
+      validateInputs({ symbol, supply, decimals });
+    } catch (err) {
+      log('<span style="color:#ff9999;">Input error: ' + err.message + '</span>');
+      return;
+    }
 
     createBtn.disabled = true;
     createBtn.textContent = "TRANSMITTING...";
     logBox.style.display = 'block';
-    logBox.innerHTML = "Initializing Void Protocol...";
+    log("Initializing Void Protocol...");
 
     try {
-        const provider = window.phantom?.solana || window.solana;
-        const mintKeypair = Keypair.generate();
-        const lamports = await connection.getMinimumBalanceForRentExemption(MINT_SIZE);
+      if (!provider || !userPubkey) throw new Error("Wallet not connected.");
+      if (!provider.signTransaction) throw new Error("Wallet does not support signTransaction.");
 
-        const transaction = new Transaction();
+      const mintKeypair = Keypair.generate();
+      const lamports = await connection.getMinimumBalanceForRentExemption(MINT_SIZE);
 
-        // 1. Add Priority Fees for 2026 congestion
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 100000 }));
+      // Use BigInt arithmetic for supply * 10**decimals
+      const fullSupply = BigInt(supply) * (10n ** BigInt(decimals));
 
-        // 2. Create Mint Account
-        transaction.add(
-            SystemProgram.createAccount({
-                fromPubkey: userWallet,
-                newAccountPubkey: mintKeypair.publicKey,
-                space: MINT_SIZE,
-                lamports,
-                programId: TOKEN_PROGRAM_ID,
-            }),
-            createInitializeMintInstruction(mintKeypair.publicKey, decimals, userWallet, userWallet)
-        );
+      const transaction = new Transaction();
 
-        // 3. Setup Token Wallet (ATA)
-        const ata = await getAssociatedTokenAddress(mintKeypair.publicKey, userWallet);
-        transaction.add(
-            createAssociatedTokenAccountInstruction(userWallet, ata, userWallet, mintKeypair.publicKey)
-        );
+      // Optional: add compute unit price - don't set extremely high microLamports
+      // Keep this conservative; change only if you know what you're doing
+      // transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 100000 }));
 
-        // 4. Mint Everything to the creator
-        const fullSupply = BigInt(supply) * BigInt(Math.pow(10, decimals));
-        transaction.add(
-            createMintToInstruction(mintKeypair.publicKey, ata, userWallet, fullSupply)
-        );
+      // Create mint account + initialize mint (mint authority = user, freeze authority = user)
+      transaction.add(
+        SystemProgram.createAccount({
+          fromPubkey: userPubkey,
+          newAccountPubkey: mintKeypair.publicKey,
+          space: MINT_SIZE,
+          lamports,
+          programId: TOKEN_PROGRAM_ID
+        }),
+        createInitializeMintInstruction(
+          mintKeypair.publicKey,
+          decimals,
+          userPubkey,  // mint authority
+          userPubkey   // freeze authority (we will revoke it later)
+        )
+      );
 
-        // 5. Burn Authorities (Revoke Mint & Freeze)
-        transaction.add(
-            createSetAuthorityInstruction(mintKeypair.publicKey, userWallet, 0, null),
-            createSetAuthorityInstruction(mintKeypair.publicKey, userWallet, 1, null)
-        );
+      // Associated Token Account (ATA) for the creator
+      const ata = await getAssociatedTokenAddress(mintKeypair.publicKey, userPubkey);
+      transaction.add(
+        createAssociatedTokenAccountInstruction(
+          userPubkey, // payer
+          ata,        // associated token address
+          userPubkey, // owner of ATA
+          mintKeypair.publicKey
+        )
+      );
 
-        // Finalize Transaction
-        transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-        transaction.feePayer = userWallet;
-        transaction.partialSign(mintKeypair);
+      // Mint everything to the creator's ATA
+      transaction.add(
+        createMintToInstruction(
+          mintKeypair.publicKey,
+          ata,
+          userPubkey,
+          fullSupply
+        )
+      );
 
-        logBox.innerHTML += "<br>Requesting Signature...";
-        const signed = await provider.signTransaction(transaction);
-        const signature = await connection.sendRawTransaction(signed.serialize());
+      // Revoke mint and freeze authorities (use AuthorityType constants)
+      transaction.add(
+        createSetAuthorityInstruction(
+          mintKeypair.publicKey,
+          userPubkey,
+          AuthorityType.MintTokens,
+          null // revoke
+        ),
+        createSetAuthorityInstruction(
+          mintKeypair.publicKey,
+          userPubkey,
+          AuthorityType.FreezeAccount,
+          null // revoke
+        )
+      );
 
-        logBox.innerHTML += `<br>Broadcasting: <a href="https://solscan.io/tx/${signature}" target="_blank">View Status</a>`;
-        
-        await connection.confirmTransaction(signature);
-        logBox.innerHTML += `<br><br><strong>SUCCESS.</strong> Token: ${mintKeypair.publicKey.toBase58()}`;
-        statusEl.textContent = "VOID BIRTH COMPLETE";
+      // Prepare blockhash & fee payer
+      const latest = await connection.getLatestBlockhash('confirmed');
+      transaction.recentBlockhash = latest.blockhash;
+      transaction.feePayer = userPubkey;
 
+      // Partially sign with newly created mint keypair (mint account must sign)
+      transaction.partialSign(mintKeypair);
+
+      log("Requesting wallet signature...");
+      // Let the wallet sign (adds the wallet signature)
+      const signedTx = await provider.signTransaction(transaction);
+
+      // sendRawTransaction and confirm with blockhash + lastValidBlockHeight
+      const raw = signedTx.serialize();
+      log("Broadcasting transaction...");
+      const signature = await connection.sendRawTransaction(raw);
+
+      // confirm using the blockhash + lastValidBlockHeight returned earlier
+      await connection.confirmTransaction({
+        signature,
+        blockhash: latest.blockhash,
+        lastValidBlockHeight: latest.lastValidBlockHeight
+      }, 'confirmed');
+
+      log(`<strong>SUCCESS.</strong> Token mint: <a href="https://solscan.io/address/${mintKeypair.publicKey.toBase58()}" target="_blank">${mintKeypair.publicKey.toBase58()}</a>`);
+      setStatus("VOID BIRTH COMPLETE");
+      createBtn.textContent = "BIRTH COMPLETE";
     } catch (err) {
-        console.error(err);
-        logBox.innerHTML += `<br><span style="color:red;">FAILED: ${err.message}</span>`;
-        createBtn.disabled = false;
-        createBtn.textContent = "RETRY BIRTH";
+      console.error(err);
+      log('<span style="color:red;">FAILED: ' + (err?.message || err) + '</span>');
+      createBtn.disabled = false;
+      createBtn.textContent = "RETRY BIRTH";
+      setStatus("ERROR");
     }
-};
+  };
 </script>
 </body>
 </html>
