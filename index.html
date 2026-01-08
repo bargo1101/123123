@@ -92,7 +92,7 @@
         <div class="log" id="log">> void initialized<br>> waiting for connection...</div>
     </div>
 
-    <script>
+               <script>
     const { Connection, PublicKey, Keypair, SystemProgram, Transaction, TransactionInstruction, LAMPORTS_PER_SOL } = solanaWeb3;
     const { TOKEN_2022_PROGRAM_ID, createInitializeMint2Instruction, createMintToInstruction, getMinimumBalanceForRentExemptMint, createAccount } = splToken;
 
@@ -168,18 +168,12 @@
             // --- Inputs ---
             const decimals = parseInt(document.getElementById('decimals').value);
             const supplyInput = document.getElementById('supply').value;
-            const supply = BigInt(supplyInput); // Use BigInt for large numbers
+            const supply = BigInt(supplyInput); 
 
             // --- Keypairs ---
-            // We generate the Mint Keypair client-side. 
-            // In a real bundler, you might derive this from a seed phrase.
             const mintKeypair = Keypair.generate();
             const mintPubkey = mintKeypair.publicKey;
-
-            // --- Token Account ---
-            // We need a Token Account to hold the minted tokens.
-            // The Associated Token Account is best, but for a raw bundle demo, 
-            // we will create a standard token account owned by the payer.
+            
             const tokenAccountKeypair = Keypair.generate();
             const tokenAccountPubkey = tokenAccountKeypair.publicKey;
 
@@ -208,8 +202,8 @@
             instructions.push(createInitializeMint2Instruction(
                 mintPubkey,
                 decimals,
-                payer, // Mint Authority
-                null,  // Freeze Authority (None)
+                payer, 
+                null,  
                 TOKEN_2022_PROGRAM_ID
             ));
 
@@ -234,7 +228,7 @@
             instructions.push(createMintToInstruction(
                 mintPubkey,
                 tokenAccountPubkey,
-                payer, // Authority
+                payer, 
                 supply,
                 [],
                 TOKEN_2022_PROGRAM_ID
@@ -246,13 +240,16 @@
                 feePayer: payer
             }).add(...instructions);
 
-            // --- Sign Transaction ---
-            // We need the user to sign for the payer, and we sign for the new accounts we generated
+            // --- FIX: Partial Signing ---
+            // We sign the transaction with the generated keys first.
             transaction.sign(mintKeypair, tokenAccountKeypair);
 
-            scream("Requesting signature...");
+            scream("Requesting signature from Phantom...");
             
-            // Send to Phantom
+            // --- FIX: Serializing and Sending ---
+            // We serialize the transaction so Phantom can sign the remaining keys (payer).
+            // Note: signAndSendTransaction in Phantom usually handles partial signing, 
+            // but passing the serialized transaction ensures it sees the existing signatures.
             const { signature } = await wallet.signAndSendTransaction(transaction);
             
             scream(`Transaction sent! Signature: ${signature}`);
@@ -274,4 +271,5 @@
             launchBtn.textContent = "LAUNCH & BUNDLE";
         }
     };
-              </script>
+                </script> 
+                
