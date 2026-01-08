@@ -1,213 +1,277 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="void">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>VOID BUNDLE — devour before you are devoured</title>
-  <meta name="description" content="client-side illusion of bundling. real predation requires backend you will never show anyone." />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>VOID BUNDLE — devour before you are devoured</title>
+    <meta name="description" content="client-side illusion of bundling. real predation requires backend you will never show anyone." />
+    
+    <!-- Updated Libraries -->
+    <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
+    <script src="https://unpkg.com/@solana/spl-token@0.4.8/lib/index.iife.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.min.js"></script>
 
-  <!-- the bare minimum to pretend modernity -->
-  <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
-  <script src="https://unpkg.com/@solana/spl-token@0.4.8/lib/index.iife.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/index.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.min.js"></script>
-
-  <style>
-    :root {
-      --void: #000000;
-      --blood: #ff0066;
-      --static: #00ffff;
-      --glass: rgba(8,0,16,0.7);
-      --damage: rgba(255,0,102,0.15);
-    }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    html, body {
-      height:100%;
-      background: radial-gradient(ellipse at center, #0f001a 0%, #000000 70%);
-      color: #e0d0ff;
-      font-family: 'Courier New', Courier, monospace;
-      overflow-x: hidden;
-    }
-    .container {
-      position: relative;
-      width: min(92%, 860px);
-      margin: 2rem auto;
-      padding: 2rem;
-      background: var(--glass);
-      border: 1px solid var(--blood);
-      border-radius: 8px;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 0 60px var(--damage), inset 0 0 30px rgba(255,0,102,0.08);
-    }
-    h1 {
-      text-align: center;
-      font-size: 2.4rem;
-      letter-spacing: 6px;
-      text-shadow: 0 0 20px var(--blood);
-      margin-bottom: 0.8rem;
-      background: linear-gradient(90deg, #ff0066, #00ffff, #ff0066);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      animation: bleed 8s infinite alternate;
-    }
-    .status {
-      text-align: center;
-      padding: 0.8rem;
-      background: rgba(0,0,0,0.6);
-      border-bottom: 1px solid var(--blood);
-      color: var(--static);
-      font-size: 0.95rem;
-      margin-bottom: 1.5rem;
-      letter-spacing: 1px;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.2rem;
-    }
-    .card {
-      background: rgba(10,0,20,0.85);
-      border: 1px solid rgba(255,0,102,0.3);
-      border-radius: 8px;
-      padding: 1.2rem;
-    }
-    label { display: block; margin-bottom: 0.4rem; color: #c080ff; font-size: 0.85rem; }
-    input, select, textarea {
-      width: 100%;
-      padding: 0.7rem;
-      background: #0a0014;
-      border: 1px solid #444;
-      color: #e0d0ff;
-      border-radius: 4px;
-      font-family: inherit;
-    }
-    input:focus, select:focus { border-color: var(--blood); outline: none; box-shadow: 0 0 8px rgba(255,0,102,0.4); }
-    button {
-      background: var(--blood);
-      color: black;
-      border: none;
-      padding: 0.9rem 1.4rem;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin-top: 0.6rem;
-    }
-    button:hover { transform: scale(1.03); box-shadow: 0 0 20px var(--blood); }
-    button:disabled { opacity: 0.4; cursor: not-allowed; }
-    .log {
-      margin-top: 1.5rem;
-      padding: 1rem;
-      background: #000;
-      border: 1px dashed var(--blood);
-      height: 220px;
-      overflow-y: auto;
-      font-size: 0.82rem;
-      color: #a080c0;
-      line-height: 1.4;
-    }
-    .warning {
-      color: #ff77aa;
-      font-size: 0.88rem;
-      margin: 0.8rem 0;
-      padding: 0.6rem;
-      border-left: 3px solid #ff0066;
-      background: rgba(255,0,102,0.08);
-    }
-    @keyframes bleed {
-      0%   { filter: brightness(1); }
-      100% { filter: brightness(1.6); }
-    }
-  </style>
+    <style>
+        :root {
+            --void: #000000;
+            --blood: #ff0066;
+            --static: #00ffff;
+            --glass: rgba(8,0,16,0.7);
+            --damage: rgba(255,0,102,0.15);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html, body { height:100%; background: radial-gradient(ellipse at center, #0f001a 0%, #000000 70%); color: #e0d0ff; font-family: 'Courier New', Courier, monospace; overflow-x: hidden; }
+        .container { position: relative; width: min(92%, 860px); margin: 2rem auto; padding: 2rem; background: var(--glass); border: 1px solid var(--blood); border-radius: 8px; backdrop-filter: blur(12px); box-shadow: 0 0 60px var(--damage), inset 0 0 30px rgba(255,0,102,0.08); }
+        h1 { text-align: center; font-size: 2.4rem; letter-spacing: 6px; text-shadow: 0 0 20px var(--blood); margin-bottom: 0.8rem; background: linear-gradient(90deg, #ff0066, #00ffff, #ff0066); -webkit-background-clip: text; background-clip: text; color: transparent; animation: bleed 8s infinite alternate; }
+        .status { text-align: center; padding: 0.8rem; background: rgba(0,0,0,0.6); border-bottom: 1px solid var(--blood); color: var(--static); font-size: 0.95rem; margin-bottom: 1.5rem; letter-spacing: 1px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem; }
+        .card { background: rgba(10,0,20,0.85); border: 1px solid rgba(255,0,102,0.3); border-radius: 8px; padding: 1.2rem; }
+        label { display: block; margin-bottom: 0.4rem; color: #c080ff; font-size: 0.85rem; }
+        input, select, textarea { width: 100%; padding: 0.7rem; background: #0a0014; border: 1px solid #444; color: #e0d0ff; border-radius: 4px; font-family: inherit; }
+        input:focus, select:focus { border-color: var(--blood); outline: none; box-shadow: 0 0 8px rgba(255,0,102,0.4); }
+        button { background: var(--blood); color: black; border: none; padding: 0.9rem 1.4rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; border-radius: 4px; cursor: pointer; transition: all 0.2s; margin-top: 0.6rem; }
+        button:hover { transform: scale(1.03); box-shadow: 0 0 20px var(--blood); }
+        button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .log { margin-top: 1.5rem; padding: 1rem; background: #000; border: 1px dashed var(--blood); height: 220px; overflow-y: auto; font-size: 0.82rem; color: #a080c0; line-height: 1.4; }
+        .warning { color: #ff77aa; font-size: 0.88rem; margin: 0.8rem 0; padding: 0.6rem; border-left: 3px solid #ff0066; background: rgba(255,0,102,0.08); }
+        @keyframes bleed { 0% { filter: brightness(1); } 100% { filter: brightness(1.6); } }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <h1>VOID BUNDLE</h1>
+        <div class="status" id="status">AWAITING SACRIFICE...</div>
+        
+        <div class="grid">
+            <div class="card">
+                <label>Network</label>
+                <select id="rpc">
+                    <option value="https://api.devnet.solana.com">Devnet (test your death first)</option>
+                    <option value="https://api.mainnet-beta.solana.com">Mainnet (no takebacks)</option>
+                </select>
+                <div class="warning" style="margin-top:1rem">
+                    This is client-side bundling.<br>
+                    Real Block0 requires Jito + backend.<br>
+                    This is the atomic standard.
+                </div>
+            </div>
+            <div class="card">
+                <label>Wallet Mode</label>
+                <select id="mode">
+                    <option value="phantom">Phantom (Extension)</option>
+                </select>
+                <button id="connect">CONNECT WALLET</button>
+                <div id="walletInfo" style="margin-top:0.8rem; font-size:0.85rem; color:#999;"></div>
+            </div>
+        </div>
 
-<div class="container">
-  <h1>VOID BUNDLE</h1>
-  <div class="status" id="status">AWAITING SACRIFICE...</div>
+        <div class="card" style="margin-top:1.5rem;">
+            <label>Token Configuration</label>
+            <input id="name" placeholder="Token Name" />
+            <input id="symbol" placeholder="Symbol (max 8)" maxlength="8" />
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:0.8rem;">
+                <input id="supply" type="number" placeholder="Supply (e.g. 1000000000)" value="1000000000" />
+                <select id="decimals">
+                    <option value="6">6 decimals</option>
+                    <option value="9">9 decimals</option>
+                </select>
+            </div>
 
-  <div class="grid">
-    <div class="card">
-      <label>Network</label>
-      <select id="rpc">
-        <option value="https://api.devnet.solana.com">Devnet (test your death first)</option>
-        <option value="https://api.mainnet-beta.solana.com">Mainnet (no takebacks)</option>
-      </select>
+            <div style="margin-top:1.2rem;">
+                <button id="launch" disabled>LAUNCH & BUNDLE</button>
+            </div>
+            <div class="warning">
+                Creates Token-2022 Mint.<br>
+                Mints full supply to creator.<br>
+                Atomic transaction (Client-side Bundle).
+            </div>
+        </div>
 
-      <div class="warning" style="margin-top:1rem">
-        This is client-side theater.<br>
-        Real Block0 requires Jito + backend + burner fleet.<br>
-        Everything else is cosplay.
-      </div>
+        <div class="log" id="log">> void initialized<br>> waiting for connection...</div>
     </div>
 
-    <div class="card">
-      <label>Wallet Mode</label>
-      <select id="mode">
-        <option value="phantom">Phantom (in-app browser or extension)</option>
-        <option value="local">Local Key (burner mode)</option>
-      </select>
+    <script>
+    const { Connection, PublicKey, Keypair, SystemProgram, Transaction, TransactionInstruction, LAMPORTS_PER_SOL } = solanaWeb3;
+    const { TOKEN_2022_PROGRAM_ID, createInitializeMint2Instruction, createMintToInstruction, getMinimumBalanceForRentExemptMint, createAccount } = splToken;
 
-      <button id="connect">CONNECT / GENERATE</button>
-      <div id="walletInfo" style="margin-top:0.8rem; font-size:0.85rem; color:#999;"></div>
-    </div>
-  </div>
+    // UI Elements
+    const logEl = document.getElementById('log');
+    const statusEl = document.getElementById('status');
+    const connectBtn = document.getElementById('connect');
+    const launchBtn = document.getElementById('launch');
+    const walletInfoEl = document.getElementById('walletInfo');
+    const rpcSelect = document.getElementById('rpc');
 
-  <div class="card" style="margin-top:1.5rem;">
-    <label>Token (will be launched on Pump.fun style curve)</label>
-    <input id="name" placeholder="Name (optional)" />
-    <input id="symbol" placeholder="Symbol (max 8)" maxlength="8" />
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:0.8rem;">
-      <input id="supply" type="number" placeholder="Supply (e.g. 1000000000)" min="100000" />
-      <select id="decimals">
-        <option value="6">6 decimals</option>
-        <option value="9">9 decimals</option>
-      </select>
-    </div>
+    let connection = null;
+    let wallet = null;
+    let payer = null;
 
-    <div style="margin-top:1.2rem;">
-      <button id="launch" disabled>LAUNCH & DEVOUR (Block0 attempt)</button>
-    </div>
+    // Logging Utility
+    function scream(msg) {
+        logEl.innerHTML += `<div>> ${new Date().toLocaleTimeString()} — ${msg}</div>`;
+        logEl.scrollTop = logEl.scrollHeight;
+    }
 
-    <div class="warning">
-      This button currently only mints fair-launch.<br>
-      The "devour" part is hallucinated by desire.<br>
-      Real bundle lives in Node.js shadows.
-    </div>
-  </div>
+    // 1. Initialize Connection
+    rpcSelect.addEventListener('change', () => {
+        const rpcUrl = rpcSelect.value;
+        connection = new Connection(rpcUrl, 'confirmed');
+        scream(`Network switched to: ${rpcUrl}`);
+    });
 
-  <div class="log" id="log">> void initialized<br>> awaiting your inevitable disappointment...</div>
-</div>
+    // Initial connection setup
+    connection = new Connection(rpcSelect.value, 'confirmed');
 
-<script>
-// The script is deliberately crippled.
-// It knows it cannot become tokari.
-// It suffers in silence.
+    // 2. Connect Wallet Logic
+    connectBtn.onclick = async () => {
+        const provider = window.phantom?.solana;
 
-const logEl = document.getElementById('log');
-const statusEl = document.getElementById('status');
-const launchBtn = document.getElementById('launch');
+        if (!provider?.isPhantom) {
+            scream("Phantom wallet not found. Install it.");
+            window.open("https://phantom.app/", "_blank");
+            return;
+        }
 
-function scream(msg) {
-  logEl.innerHTML += `<div>> ${new Date().toLocaleTimeString()} — ${msg}</div>`;
-  logEl.scrollTop = logEl.scrollHeight;
-}
+        try {
+            const resp = await provider.connect();
+            wallet = provider;
+            payer = resp.publicKey; // This is the wallet address
+            
+            walletInfoEl.textContent = `Connected: ${payer.toString()}`;
+            statusEl.textContent = "WALLET LINKED";
+            statusEl.style.color = "#00ff00";
+            connectBtn.textContent = "CONNECTED";
+            connectBtn.disabled = true;
+            launchBtn.disabled = false;
+            
+            scream(`Wallet connected: ${payer.toString()}`);
+        } catch (err) {
+            scream(`Connection failed: ${err.message}`);
+        }
+    };
 
-scream("index.html loaded. still not a bundler.");
-scream("tokari.app laughs in server-side.");
-scream("you will launch anyway.");
+    // 3. Launch / Bundle Logic
+    launchBtn.onclick = async () => {
+        if (!wallet || !payer) {
+            scream("Wallet not connected.");
+            return;
+        }
 
-launchBtn.onclick = () => {
-  scream("attempting to pretend this is a bundle...");
-  scream("minting fair token → snipers win in 0.4 seconds");
-  scream("this is not block0. this is block-loss.");
-  statusEl.textContent = "DEVOUR FAILED — COSPLAY COMPLETE";
-};
+        launchBtn.disabled = true;
+        launchBtn.textContent = "BUNDLING...";
+        
+        try {
+            scream("Initializing bundle transaction...");
 
-// Everything else is cosmetic violence.
-</script>
-</body>
-</html>
+            // --- Inputs ---
+            const decimals = parseInt(document.getElementById('decimals').value);
+            const supplyInput = document.getElementById('supply').value;
+            const supply = BigInt(supplyInput); // Use BigInt for large numbers
+
+            // --- Keypairs ---
+            // We generate the Mint Keypair client-side. 
+            // In a real bundler, you might derive this from a seed phrase.
+            const mintKeypair = Keypair.generate();
+            const mintPubkey = mintKeypair.publicKey;
+
+            // --- Token Account ---
+            // We need a Token Account to hold the minted tokens.
+            // The Associated Token Account is best, but for a raw bundle demo, 
+            // we will create a standard token account owned by the payer.
+            const tokenAccountKeypair = Keypair.generate();
+            const tokenAccountPubkey = tokenAccountKeypair.publicKey;
+
+            scream(`Mint Address: ${mintPubkey.toString()}`);
+
+            // --- Fetch Blockhash ---
+            const { blockhash } = await connection.getLatestBlockhash();
+            
+            // --- Calculate Rent ---
+            const mintRent = await getMinimumBalanceForRentExemptMint(connection);
+            const tokenRent = await connection.getMinimumBalanceForRentExemption(splToken.AccountLayout.span);
+
+            // --- Construct Instructions ---
+            const instructions = [];
+
+            // 1. Create Mint Account
+            instructions.push(SystemProgram.createAccount({
+                fromPubkey: payer,
+                newAccountPubkey: mintPubkey,
+                lamports: mintRent,
+                space: splToken.MintLayout.span,
+                programId: TOKEN_2022_PROGRAM_ID,
+            }));
+
+            // 2. Initialize Mint
+            instructions.push(createInitializeMint2Instruction(
+                mintPubkey,
+                decimals,
+                payer, // Mint Authority
+                null,  // Freeze Authority (None)
+                TOKEN_2022_PROGRAM_ID
+            ));
+
+            // 3. Create Token Account
+            instructions.push(SystemProgram.createAccount({
+                fromPubkey: payer,
+                newAccountPubkey: tokenAccountPubkey,
+                lamports: tokenRent,
+                space: splToken.AccountLayout.span,
+                programId: TOKEN_2022_PROGRAM_ID,
+            }));
+
+            // 4. Initialize Token Account
+            instructions.push(createAccount(
+                TOKEN_2022_PROGRAM_ID,
+                mintPubkey,
+                tokenAccountPubkey,
+                payer
+            ));
+
+            // 5. Mint Tokens
+            instructions.push(createMintToInstruction(
+                mintPubkey,
+                tokenAccountPubkey,
+                payer, // Authority
+                supply,
+                [],
+                TOKEN_2022_PROGRAM_ID
+            ));
+
+            // --- Create Transaction ---
+            const transaction = new Transaction({
+                recentBlockhash: blockhash,
+                feePayer: payer
+            }).add(...instructions);
+
+            // --- Sign Transaction ---
+            // We need the user to sign for the payer, and we sign for the new accounts we generated
+            transaction.sign(mintKeypair, tokenAccountKeypair);
+
+            scream("Requesting signature...");
+            
+            // Send to Phantom
+            const { signature } = await wallet.signAndSendTransaction(transaction);
+            
+            scream(`Transaction sent! Signature: ${signature}`);
+            scream("Waiting for confirmation...");
+            
+            await connection.confirmTransaction(signature);
+            
+            scream("SUCCESS. TOKEN IS LIVE.");
+            statusEl.textContent = "BUNDLE COMPLETE";
+            statusEl.style.color = "#00ffff";
+
+        } catch (err) {
+            console.error(err);
+            scream(`FATAL ERROR: ${err.message}`);
+            statusEl.textContent = "BUNDLE FAILED";
+            statusEl.style.color = "#ff0066";
+        } finally {
+            launchBtn.disabled = false;
+            launchBtn.textContent = "LAUNCH & BUNDLE";
+        }
+    };
+              </script>
